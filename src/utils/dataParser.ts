@@ -1,6 +1,6 @@
 import * as XLSX from "xlsx";
 import { LearnerScore, SubjectPerformance, DashboardStats } from "@/types/learner";
-import { generateSubjectRemarks } from "./remarkGenerator";
+import { generateSubjectRemarks, getBECEGrade } from "./remarkGenerator";
 
 const getNum = (row: any, candidates: string[]): number => {
   const keyMap = new Map(
@@ -48,25 +48,27 @@ export const parseExcelFile = (file: File): Promise<LearnerScore[]> => {
               averageScore: parseFloat(row["AVERAGE SCORE"]) || 0,
             };
             
-            // Calculate total aggregate: first 4 subjects + best 2 from others
-            const firstFour = [
-              learnerData.mathematics,
-              learnerData.naturalScience,
-              learnerData.englishLanguage,
-              learnerData.history
-            ];
+            // Calculate total aggregate using BECE grades: first 4 subjects + best 2 from others
+            const firstFourGrades = [
+              getBECEGrade(learnerData.mathematics),
+              getBECEGrade(learnerData.naturalScience),
+              getBECEGrade(learnerData.englishLanguage),
+              getBECEGrade(learnerData.history)
+            ].map(g => typeof g === 'number' ? g : 9); // Convert "-" to 9 (lowest)
             
-            const otherSubjects = [
-              learnerData.computing,
-              learnerData.rme,
-              learnerData.creativeArts,
-              learnerData.owop,
-              learnerData.ghanaianLanguage,
-              learnerData.french
-            ].sort((a, b) => b - a); // Sort descending
+            const otherSubjectsGrades = [
+              getBECEGrade(learnerData.computing),
+              getBECEGrade(learnerData.rme),
+              getBECEGrade(learnerData.creativeArts),
+              getBECEGrade(learnerData.owop),
+              getBECEGrade(learnerData.ghanaianLanguage),
+              getBECEGrade(learnerData.french)
+            ]
+              .map(g => typeof g === 'number' ? g : 9) // Convert "-" to 9 (lowest)
+              .sort((a, b) => a - b); // Sort ascending (lower is better in BECE)
             
-            const totalAggregate = firstFour.reduce((sum, score) => sum + score, 0) + 
-                                   otherSubjects[0] + otherSubjects[1];
+            const totalAggregate = firstFourGrades.reduce((sum, grade) => sum + grade, 0) + 
+                                   otherSubjectsGrades[0] + otherSubjectsGrades[1];
             
             return {
               ...learnerData,
