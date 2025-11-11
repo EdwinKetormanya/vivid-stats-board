@@ -1,0 +1,4 @@
+project_id = "lioxixksqpwuuldghybh"
+
+[functions.analyze-performance]
+verify_jwt = false
