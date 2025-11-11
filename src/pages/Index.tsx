@@ -431,10 +431,28 @@ const handleSchoolLogoChange = async (logoBase64: string) => {
     }
   };
 
-  const handleAttendanceOutOfChange = (attendanceOutOf: number) => {
-    setStudents((prev) =>
-      prev.map((s) => ({ ...s, attendanceOutOf }))
-    );
+  const handleAttendanceOutOfChange = async (attendanceOutOf: number) => {
+    if (!selectedClassId) return;
+
+    try {
+      // Update all students in the database with the new attendance_out_of value
+      const { error } = await supabase
+        .from("students")
+        .update({ attendance_out_of: attendanceOutOf })
+        .eq("class_id", selectedClassId);
+
+      if (error) throw error;
+
+      // Update local state
+      setStudents((prev) =>
+        prev.map((s) => ({ ...s, attendanceOutOf }))
+      );
+
+      toast.success("Attendance total updated for all students");
+    } catch (error) {
+      console.error("Error updating attendance out of:", error);
+      toast.error("Failed to update attendance total");
+    }
   };
 
   const handlePrint = () => {
