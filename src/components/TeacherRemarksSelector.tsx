@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { LearnerScore } from "@/types/learner";
 import { Card } from "@/components/ui/card";
 import {
@@ -16,6 +17,8 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { regions, ghanaRegionsDistricts } from "@/data/ghanaRegionsDistricts";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface TeacherRemarksSelectorProps {
   learners: LearnerScore[];
@@ -106,9 +109,29 @@ export const TeacherRemarksSelector = ({
   onDistrictChange,
   onSchoolNameChange
 }: TeacherRemarksSelectorProps) => {
+  const [availableSchools, setAvailableSchools] = useState<Array<{ id: string; name: string }>>([]);
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 10 }, (_, i) => (currentYear - 5 + i).toString());
   const rollNumbers = Array.from({ length: 100 }, (_, i) => (i + 1).toString());
+
+  useEffect(() => {
+    fetchSchools();
+  }, []);
+
+  const fetchSchools = async () => {
+    const { data, error } = await supabase
+      .from("schools")
+      .select("id, name")
+      .order("name");
+
+    if (error) {
+      toast.error("Failed to load schools");
+      console.error(error);
+      return;
+    }
+
+    setAvailableSchools(data || []);
+  };
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -175,11 +198,24 @@ export const TeacherRemarksSelector = ({
 
         <div className="mb-4">
           <label className="text-sm font-medium mb-2 block">School Name</label>
-          <Input
-            placeholder="Enter school name"
-            value={schoolName}
-            onChange={(e) => onSchoolNameChange(e.target.value)}
-          />
+          <Select 
+            value={schoolName} 
+            onValueChange={onSchoolNameChange}
+          >
+            <SelectTrigger className="bg-background">
+              <SelectValue placeholder="Select School" />
+            </SelectTrigger>
+            <SelectContent className="bg-background z-50">
+              {availableSchools.map((school) => (
+                <SelectItem key={school.id} value={school.name}>
+                  {school.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground mt-1">
+            Contact developer to add more schools
+          </p>
         </div>
       </div>
       

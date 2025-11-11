@@ -14,7 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      schools: {
+        Row: {
+          created_at: string
+          district: string | null
+          id: string
+          name: string
+          region: string | null
+        }
+        Insert: {
+          created_at?: string
+          district?: string | null
+          id?: string
+          name: string
+          region?: string | null
+        }
+        Update: {
+          created_at?: string
+          district?: string | null
+          id?: string
+          name?: string
+          region?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
