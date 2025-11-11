@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Users, BookOpen, GraduationCap, ArrowLeft, UserPlus, Trash2, Upload, Download, CheckCircle2, AlertCircle, XCircle } from "lucide-react";
+import { Loader2, Users, BookOpen, GraduationCap, ArrowLeft, UserPlus, Trash2, Upload, Download, CheckCircle2, AlertCircle, XCircle, Search } from "lucide-react";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
 import {
@@ -111,6 +111,7 @@ const SchoolAdmin = () => {
     existingName?: string;
   }>>([]);
   const [bulkImportFilter, setBulkImportFilter] = useState<"all" | "valid" | "errors">("all");
+  const [bulkImportSearch, setBulkImportSearch] = useState("");
 
   useEffect(() => {
     if (!profileLoading && !hasRole("school_admin") && !hasRole("super_admin")) {
@@ -950,10 +951,22 @@ const SchoolAdmin = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           
-          {/* Filter Tabs */}
-          <div className="flex items-center justify-between px-1 pb-2 border-b">
+          {/* Search and Filter */}
+          <div className="space-y-3 px-1">
+            {/* Search Bar */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by email or name..."
+                value={bulkImportSearch}
+                onChange={(e) => setBulkImportSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            
+            {/* Filter Tabs */}
             <Tabs value={bulkImportFilter} onValueChange={(v) => setBulkImportFilter(v as "all" | "valid" | "errors")} className="w-full">
-              <TabsList className="grid w-full max-w-md grid-cols-3">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="all" className="text-xs">
                   All ({pendingBulkTeachers.length})
                 </TabsTrigger>
@@ -982,13 +995,26 @@ const SchoolAdmin = () => {
               <TableBody>
                 {pendingBulkTeachers
                   .filter(teacher => {
+                    // Apply status filter
                     if (bulkImportFilter === "valid") {
-                      return teacher.validationStatus === "valid";
+                      if (teacher.validationStatus !== "valid") return false;
                     }
                     if (bulkImportFilter === "errors") {
-                      return teacher.validationStatus === "not_found" || teacher.validationStatus === "already_added";
+                      if (teacher.validationStatus !== "not_found" && teacher.validationStatus !== "already_added") return false;
                     }
-                    return true; // "all"
+                    
+                    // Apply search filter
+                    if (bulkImportSearch.trim()) {
+                      const searchLower = bulkImportSearch.toLowerCase();
+                      const emailMatch = teacher.email.toLowerCase().includes(searchLower);
+                      const nameMatch = 
+                        teacher.fullName?.toLowerCase().includes(searchLower) ||
+                        teacher.existingName?.toLowerCase().includes(searchLower);
+                      
+                      if (!emailMatch && !nameMatch) return false;
+                    }
+                    
+                    return true;
                   })
                   .map((teacher, index) => (
                   <TableRow key={index} className={
@@ -1032,17 +1058,30 @@ const SchoolAdmin = () => {
                   </TableRow>
                 ))}
                 {pendingBulkTeachers.filter(teacher => {
+                  // Apply status filter
                   if (bulkImportFilter === "valid") {
-                    return teacher.validationStatus === "valid";
+                    if (teacher.validationStatus !== "valid") return false;
                   }
                   if (bulkImportFilter === "errors") {
-                    return teacher.validationStatus === "not_found" || teacher.validationStatus === "already_added";
+                    if (teacher.validationStatus !== "not_found" && teacher.validationStatus !== "already_added") return false;
                   }
+                  
+                  // Apply search filter
+                  if (bulkImportSearch.trim()) {
+                    const searchLower = bulkImportSearch.toLowerCase();
+                    const emailMatch = teacher.email.toLowerCase().includes(searchLower);
+                    const nameMatch = 
+                      teacher.fullName?.toLowerCase().includes(searchLower) ||
+                      teacher.existingName?.toLowerCase().includes(searchLower);
+                    
+                    if (!emailMatch && !nameMatch) return false;
+                  }
+                  
                   return true;
                 }).length === 0 && (
                   <TableRow>
                     <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
-                      No teachers to display in this filter
+                      {bulkImportSearch.trim() ? "No teachers match your search" : "No teachers to display in this filter"}
                     </TableCell>
                   </TableRow>
                 )}
