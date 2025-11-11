@@ -1,6 +1,7 @@
 import * as XLSX from "xlsx";
 import { LearnerScore, SubjectPerformance, DashboardStats } from "@/types/learner";
 import { generateSubjectRemarks, getBECEGrade } from "./remarkGenerator";
+import { getOrdinalSuffix } from "@/lib/utils";
 
 const getNum = (row: any, candidates: string[]): number => {
   const keyMap = new Map(
@@ -44,7 +45,7 @@ export const parseExcelFile = (file: File): Promise<LearnerScore[]> => {
               ghanaianLanguage: parseFloat(row["GHANAIAN LANGUAGE"]) || 0,
               french: parseFloat(row["FRENCH"]) || 0,
               totalRawScore: parseFloat(row["TOTAL RAW SCORE"]) || 0,
-              position: row["POSITION"] || "",
+              position: getOrdinalSuffix(row["POSITION"] || ""),
               averageScore: parseFloat(row["AVERAGE SCORE"]) || 0,
             };
             
