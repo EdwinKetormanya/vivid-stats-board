@@ -1,6 +1,6 @@
 import { LearnerScore } from "@/types/learner";
 import { Card } from "@/components/ui/card";
-import { getGrade, getWAECGrade } from "@/utils/remarkGenerator";
+import { getGrade, getBECEGrade } from "@/utils/remarkGenerator";
 import { format } from "date-fns";
 
 interface IndividualReportProps {
@@ -96,7 +96,7 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
                 {getGrade(subject.value)}
               </span>
               <span className="font-bold text-sm text-center w-8 bg-secondary text-secondary-foreground rounded px-1">
-                {getWAECGrade(subject.value)}
+                {getBECEGrade(subject.value)}
               </span>
               <span className="text-gray-600 italic text-right">
                 {learner.remarks?.[subject.key] || "No Score"}

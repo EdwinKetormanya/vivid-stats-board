@@ -9,14 +9,17 @@ export const getGrade = (score: number): string => {
   return "-";
 };
 
-// Utility function to convert score to WAEC grade equivalent (1-6)
-export const getWAECGrade = (score: number): number | string => {
-  if (score >= 80) return 1; // A - Excellent
-  if (score >= 70) return 2; // B - Very Good
-  if (score >= 60) return 3; // C - Good
-  if (score >= 50) return 4; // D - Credit
-  if (score >= 40) return 5; // E - Pass
-  if (score > 0) return 6; // F - Fail
+// Utility function to convert score to BECE grade equivalent (1-9)
+export const getBECEGrade = (score: number): number | string => {
+  if (score >= 80) return 1; // Highest
+  if (score >= 70) return 2; // Higher
+  if (score >= 60) return 3; // High
+  if (score >= 55) return 4; // High Average
+  if (score >= 50) return 5; // Average
+  if (score >= 45) return 6; // Low Average
+  if (score >= 40) return 7; // Low
+  if (score >= 35) return 8; // Lower
+  if (score > 0) return 9; // Lowest
   return "-";
 };
 
