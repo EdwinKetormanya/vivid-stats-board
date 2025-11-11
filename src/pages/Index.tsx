@@ -3,7 +3,6 @@ import { FileUpload } from "@/components/FileUpload";
 import { StatCard } from "@/components/StatCard";
 import { PerformanceChart } from "@/components/PerformanceChart";
 import { LeaderboardTable } from "@/components/LeaderboardTable";
-import { InsightsPanel } from "@/components/InsightsPanel";
 import { Users, TrendingUp, Trophy, BarChart3 } from "lucide-react";
 import { parseExcelFile, calculateSubjectPerformance, calculateDashboardStats } from "@/utils/dataParser";
 import { LearnerScore } from "@/types/learner";
@@ -108,13 +107,6 @@ const Index = () => {
 
             {/* Leaderboard */}
             <LeaderboardTable learners={topLearners} />
-
-            {/* AI Insights Panel */}
-            <InsightsPanel 
-              learners={learners}
-              subjectPerformance={subjectPerformance}
-              stats={stats}
-            />
 
             {/* Upload New File Button */}
             <div className="flex justify-center">
