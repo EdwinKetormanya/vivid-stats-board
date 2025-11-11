@@ -1,3 +1,14 @@
+// Utility function to convert score to grade
+export const getGrade = (score: number): string => {
+  if (score >= 80) return "A";
+  if (score >= 70) return "B";
+  if (score >= 60) return "C";
+  if (score >= 50) return "D";
+  if (score >= 40) return "E";
+  if (score > 0) return "F";
+  return "-";
+};
+
 // Utility function to generate remarks based on score
 export const generateRemark = (score: number): string => {
   if (score >= 80) return "Excellent";
