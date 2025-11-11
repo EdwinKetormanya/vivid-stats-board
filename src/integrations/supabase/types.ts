@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      bulk_import_templates: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          name: string
+          school_id: string
+          teachers: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          name: string
+          school_id: string
+          teachers: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          name?: string
+          school_id?: string
+          teachers?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       classes: {
         Row: {
           created_at: string

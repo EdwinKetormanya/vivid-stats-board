@@ -123,6 +123,17 @@ const SchoolAdmin = () => {
   const [selectedTeachers, setSelectedTeachers] = useState<Set<number>>(new Set());
   const [bulkRoleChangeDialogOpen, setBulkRoleChangeDialogOpen] = useState(false);
   const [bulkRoleChangeValue, setBulkRoleChangeValue] = useState<"teacher" | "school_admin">("teacher");
+  const [saveTemplateDialogOpen, setSaveTemplateDialogOpen] = useState(false);
+  const [loadTemplateDialogOpen, setLoadTemplateDialogOpen] = useState(false);
+  const [templateName, setTemplateName] = useState("");
+  const [templateDescription, setTemplateDescription] = useState("");
+  const [savedTemplates, setSavedTemplates] = useState<Array<{
+    id: string;
+    name: string;
+    description: string | null;
+    teachers: any;
+    created_at: string;
+  }>>([]);
 
   useEffect(() => {
     if (!profileLoading && !hasRole("school_admin") && !hasRole("super_admin")) {
@@ -134,6 +145,7 @@ const SchoolAdmin = () => {
   useEffect(() => {
     if (profile?.school_id) {
       loadSchoolData();
+      loadTemplates();
     }
   }, [profile]);
 
@@ -227,6 +239,108 @@ const SchoolAdmin = () => {
       toast.error("Failed to load school data");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadTemplates = async () => {
+    if (!profile?.school_id) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("bulk_import_templates")
+        .select("*")
+        .eq("school_id", profile.school_id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setSavedTemplates(data || []);
+    } catch (error) {
+      console.error("Error loading templates:", error);
+    }
+  };
+
+  const saveTemplate = async () => {
+    if (!profile?.school_id || !templateName.trim()) {
+      toast.error("Please enter a template name");
+      return;
+    }
+
+    if (pendingBulkTeachers.length === 0) {
+      toast.error("No teachers to save");
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("bulk_import_templates")
+        .insert({
+          school_id: profile.school_id,
+          created_by: profile.id,
+          name: templateName.trim(),
+          description: templateDescription.trim() || null,
+          teachers: pendingBulkTeachers,
+        });
+
+      if (error) throw error;
+
+      toast.success("Template saved successfully");
+      setTemplateName("");
+      setTemplateDescription("");
+      setSaveTemplateDialogOpen(false);
+      loadTemplates();
+    } catch (error) {
+      console.error("Error saving template:", error);
+      toast.error("Failed to save template");
+    }
+  };
+
+  const loadTemplate = async (templateId: string) => {
+    try {
+      const template = savedTemplates.find(t => t.id === templateId);
+      if (!template) return;
+
+      const teachersToLoad = template.teachers as Array<{
+        email: string;
+        fullName?: string;
+        role: "teacher" | "school_admin";
+        validationStatus: "valid" | "not_found" | "already_added" | "validating" | "duplicate";
+        profileId?: string;
+        existingName?: string;
+      }>;
+
+      // Filter out duplicates with existing list
+      const existingEmails = new Set(pendingBulkTeachers.map(t => t.email));
+      const newTeachers = teachersToLoad.filter(t => !existingEmails.has(t.email));
+      
+      if (newTeachers.length < teachersToLoad.length) {
+        const duplicateCount = teachersToLoad.length - newTeachers.length;
+        toast.info(`Skipped ${duplicateCount} duplicate email(s) already in the list`);
+      }
+
+      setPendingBulkTeachers(prev => [...prev, ...newTeachers]);
+      setLoadTemplateDialogOpen(false);
+      setBulkConfirmDialogOpen(true);
+      toast.success(`Loaded ${newTeachers.length} teacher(s) from template`);
+    } catch (error) {
+      console.error("Error loading template:", error);
+      toast.error("Failed to load template");
+    }
+  };
+
+  const deleteTemplate = async (templateId: string) => {
+    try {
+      const { error } = await supabase
+        .from("bulk_import_templates")
+        .delete()
+        .eq("id", templateId);
+
+      if (error) throw error;
+
+      toast.success("Template deleted");
+      loadTemplates();
+    } catch (error) {
+      console.error("Error deleting template:", error);
+      toast.error("Failed to delete template");
     }
   };
 
@@ -988,7 +1102,36 @@ const SchoolAdmin = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirm Bulk Teacher Import</AlertDialogTitle>
             <AlertDialogDescription className="space-y-2">
-              <p>Review the {pendingBulkTeachers.length} teacher(s) before importing.</p>
+              <div className="flex items-center justify-between">
+                <p>Review the {pendingBulkTeachers.length} teacher(s) before importing.</p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setLoadTemplateDialogOpen(true);
+                    }}
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Load Template
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (pendingBulkTeachers.length === 0) {
+                        toast.error("No teachers to save");
+                        return;
+                      }
+                      setSaveTemplateDialogOpen(true);
+                    }}
+                    disabled={pendingBulkTeachers.length === 0}
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Save as Template
+                  </Button>
+                </div>
+              </div>
               <div className="flex gap-4 text-sm">
                 <span className="flex items-center gap-1">
                   <CheckCircle2 className="w-4 h-4 text-green-600" />
@@ -1674,6 +1817,109 @@ const SchoolAdmin = () => {
             }}>
               Change Role
             </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Save Template Dialog */}
+      <AlertDialog open={saveTemplateDialogOpen} onOpenChange={setSaveTemplateDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Save as Template</AlertDialogTitle>
+            <AlertDialogDescription>
+              Save this bulk import list as a template for future use.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="template-name">Template Name *</Label>
+              <Input
+                id="template-name"
+                placeholder="e.g., New Teachers 2024"
+                value={templateName}
+                onChange={(e) => setTemplateName(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="template-description">Description (Optional)</Label>
+              <Input
+                id="template-description"
+                placeholder="e.g., Template for importing new teachers at start of year"
+                value={templateDescription}
+                onChange={(e) => setTemplateDescription(e.target.value)}
+              />
+            </div>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setTemplateName("");
+              setTemplateDescription("");
+            }}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={saveTemplate}>
+              Save Template
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Load Template Dialog */}
+      <AlertDialog open={loadTemplateDialogOpen} onOpenChange={setLoadTemplateDialogOpen}>
+        <AlertDialogContent className="max-w-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Load Template</AlertDialogTitle>
+            <AlertDialogDescription>
+              Select a template to load into the bulk import list.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="max-h-96 overflow-auto py-4">
+            {savedTemplates.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">No saved templates</p>
+            ) : (
+              <div className="space-y-2">
+                {savedTemplates.map((template) => (
+                  <div
+                    key={template.id}
+                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50"
+                  >
+                    <div className="flex-1">
+                      <h4 className="font-medium">{template.name}</h4>
+                      {template.description && (
+                        <p className="text-sm text-muted-foreground">{template.description}</p>
+                      )}
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {template.teachers.length} teacher{template.teachers.length !== 1 ? 's' : ''} • 
+                        Created {new Date(template.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => loadTemplate(template.id)}
+                      >
+                        Load
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          if (confirm(`Delete template "${template.name}"?`)) {
+                            deleteTemplate(template.id);
+                          }
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4 text-destructive" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Close</AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
