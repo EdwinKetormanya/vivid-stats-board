@@ -46,11 +46,20 @@
     -webkit-print-color-adjust: exact !important;
     display: block !important;
     visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  .school-logo-print {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    force-color-adjust: exact !important;
   }
   
   /* Hide elements that shouldn't print */
   button, nav, .no-print {
     visibility: hidden !important;
+    display: none !important;
   }
 }
 

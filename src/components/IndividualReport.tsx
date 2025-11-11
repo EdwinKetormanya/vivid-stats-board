@@ -23,16 +23,16 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
   ];
 
   return (
-    <div className="print-page bg-white text-black p-6 min-h-[297mm] max-w-[210mm] mx-auto flex flex-col border-4 border-gray-800">
+    <div className="print-page bg-white text-black p-4 min-h-[297mm] max-w-[210mm] mx-auto flex flex-col border-2 border-gray-800">
       {/* Header with Logo */}
       <div className="relative mb-2 border-b-2 border-gray-800 pb-2">
-        <div className="grid grid-cols-[auto_1fr] gap-3 items-start">
+        <div className="flex items-start gap-3">
           {learner.schoolLogo && (
             <div className="flex-shrink-0">
               <img 
                 src={learner.schoolLogo} 
                 alt="School Logo" 
-                className="h-16 w-16 object-contain block"
+                className="h-16 w-16 object-contain block school-logo-print"
                 style={{ 
                   printColorAdjust: 'exact', 
                   WebkitPrintColorAdjust: 'exact'
@@ -40,7 +40,7 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
               />
             </div>
           )}
-          <div className="text-center">
+          <div className="flex-1 text-center">
             <h1 className="text-lg font-bold mb-1">Student Performance Report</h1>
             {(learner.schoolName || learner.district || learner.region) && (
               <div className="text-xs text-gray-600 mb-1">
