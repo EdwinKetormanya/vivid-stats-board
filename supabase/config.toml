@@ -1,1 +1,4 @@
 project_id = "lioxixksqpwuuldghybh"
+
+[functions.send-teacher-welcome]
+verify_jwt = false
