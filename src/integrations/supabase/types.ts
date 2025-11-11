@@ -14,39 +14,274 @@ export type Database = {
   }
   public: {
     Tables: {
+      classes: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          number_on_roll: number | null
+          reopening_date: string | null
+          school_id: string
+          teacher_id: string | null
+          term: string | null
+          updated_at: string
+          vacation_date: string | null
+          year: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          number_on_roll?: number | null
+          reopening_date?: string | null
+          school_id: string
+          teacher_id?: string | null
+          term?: string | null
+          updated_at?: string
+          vacation_date?: string | null
+          year?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          number_on_roll?: number | null
+          reopening_date?: string | null
+          school_id?: string
+          teacher_id?: string | null
+          term?: string | null
+          updated_at?: string
+          vacation_date?: string | null
+          year?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "classes_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          school_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id: string
+          school_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          school_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       schools: {
         Row: {
           created_at: string
           district: string | null
           id: string
+          logo_url: string | null
           name: string
           region: string | null
+          updated_at: string | null
         }
         Insert: {
           created_at?: string
           district?: string | null
           id?: string
+          logo_url?: string | null
           name: string
           region?: string | null
+          updated_at?: string | null
         }
         Update: {
           created_at?: string
           district?: string | null
           id?: string
+          logo_url?: string | null
           name?: string
           region?: string | null
+          updated_at?: string | null
         }
         Relationships: []
+      }
+      students: {
+        Row: {
+          attendance: number | null
+          attendance_out_of: number | null
+          average_score: number | null
+          class_id: string
+          computing: number | null
+          conduct: string | null
+          created_at: string
+          creative_arts: number | null
+          english_language: number | null
+          french: number | null
+          ghanaian_language: number | null
+          history: number | null
+          id: string
+          interest: string | null
+          mathematics: number | null
+          name: string
+          natural_science: number | null
+          owop: number | null
+          position: string | null
+          remarks: Json | null
+          rme: number | null
+          school_id: string
+          status: string | null
+          teacher_remark: string | null
+          total_aggregate: number | null
+          total_raw_score: number | null
+          updated_at: string
+        }
+        Insert: {
+          attendance?: number | null
+          attendance_out_of?: number | null
+          average_score?: number | null
+          class_id: string
+          computing?: number | null
+          conduct?: string | null
+          created_at?: string
+          creative_arts?: number | null
+          english_language?: number | null
+          french?: number | null
+          ghanaian_language?: number | null
+          history?: number | null
+          id?: string
+          interest?: string | null
+          mathematics?: number | null
+          name: string
+          natural_science?: number | null
+          owop?: number | null
+          position?: string | null
+          remarks?: Json | null
+          rme?: number | null
+          school_id: string
+          status?: string | null
+          teacher_remark?: string | null
+          total_aggregate?: number | null
+          total_raw_score?: number | null
+          updated_at?: string
+        }
+        Update: {
+          attendance?: number | null
+          attendance_out_of?: number | null
+          average_score?: number | null
+          class_id?: string
+          computing?: number | null
+          conduct?: string | null
+          created_at?: string
+          creative_arts?: number | null
+          english_language?: number | null
+          french?: number | null
+          ghanaian_language?: number | null
+          history?: number | null
+          id?: string
+          interest?: string | null
+          mathematics?: number | null
+          name?: string
+          natural_science?: number | null
+          owop?: number | null
+          position?: string | null
+          remarks?: Json | null
+          rme?: number | null
+          school_id?: string
+          status?: string | null
+          teacher_remark?: string | null
+          total_aggregate?: number | null
+          total_raw_score?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "students_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "students_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          school_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          school_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          school_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_school: { Args: { _user_id: string }; Returns: string }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "super_admin" | "school_admin" | "teacher"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -173,6 +408,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["super_admin", "school_admin", "teacher"],
+    },
   },
 } as const
