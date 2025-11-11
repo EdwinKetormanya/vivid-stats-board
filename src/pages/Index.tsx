@@ -30,6 +30,7 @@ const Index = () => {
   const [region, setRegion] = useState<string>("");
   const [district, setDistrict] = useState<string>("");
   const [schoolName, setSchoolName] = useState<string>("");
+  const [attendanceOutOf, setAttendanceOutOf] = useState<number>(180);
 
   const handlePrint = () => {
     window.print();
@@ -95,6 +96,27 @@ const Index = () => {
     );
   };
 
+  const handleAttendanceChange = (learnerName: string, attendance: number) => {
+    setLearners((prevLearners) =>
+      prevLearners.map((learner) =>
+        learner.name === learnerName ? { 
+          ...learner, 
+          attendance,
+          attendanceOutOf,
+        } : learner
+      )
+    );
+  };
+
+  const handleAttendanceOutOfChange = (newAttendanceOutOf: number) => {
+    setAttendanceOutOf(newAttendanceOutOf);
+    setLearners((prevLearners) =>
+      prevLearners.map((learner) => ({ 
+        ...learner, 
+        attendanceOutOf: newAttendanceOutOf 
+      }))
+    );
+  };
   const handleFileSelect = async (file: File) => {
     setLoading(true);
     try {
@@ -352,6 +374,9 @@ const Index = () => {
                     onRegionChange={handleRegionChange}
                     onDistrictChange={handleDistrictChange}
                     onSchoolNameChange={handleSchoolNameChange}
+                    onAttendanceChange={handleAttendanceChange}
+                    onAttendanceOutOfChange={handleAttendanceOutOfChange}
+                    attendanceOutOf={attendanceOutOf}
                   />
                 </div>
 

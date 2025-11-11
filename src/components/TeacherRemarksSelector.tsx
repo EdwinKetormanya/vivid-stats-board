@@ -43,6 +43,9 @@ interface TeacherRemarksSelectorProps {
   onRegionChange: (region: string) => void;
   onDistrictChange: (district: string) => void;
   onSchoolNameChange: (schoolName: string) => void;
+  onAttendanceChange: (learnerName: string, attendance: number) => void;
+  onAttendanceOutOfChange: (attendanceOutOf: number) => void;
+  attendanceOutOf: number;
 }
 
 const TEACHER_REMARKS = [
@@ -107,12 +110,17 @@ export const TeacherRemarksSelector = ({
   onSchoolLogoChange,
   onRegionChange,
   onDistrictChange,
-  onSchoolNameChange
+  onSchoolNameChange,
+  onAttendanceChange,
+  onAttendanceOutOfChange,
+  attendanceOutOf
 }: TeacherRemarksSelectorProps) => {
   const [availableSchools, setAvailableSchools] = useState<Array<{ id: string; name: string }>>([]);
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 10 }, (_, i) => (currentYear - 5 + i).toString());
   const rollNumbers = Array.from({ length: 100 }, (_, i) => (i + 1).toString());
+  const attendanceNumbers = Array.from({ length: 201 }, (_, i) => i.toString());
+
 
   useEffect(() => {
     fetchSchools();
@@ -316,7 +324,7 @@ export const TeacherRemarksSelector = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
             <label className="text-sm font-medium mb-2 block">Vacation Date</label>
             <Popover>
@@ -371,11 +379,27 @@ export const TeacherRemarksSelector = ({
             </Popover>
           </div>
         </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm font-medium mb-2 block">Attendance Out Of (applies to all students)</label>
+            <Select value={attendanceOutOf.toString()} onValueChange={(value) => onAttendanceOutOfChange(Number(value))}>
+              <SelectTrigger className="bg-background">
+                <SelectValue placeholder="Select total days" />
+              </SelectTrigger>
+              <SelectContent className="bg-background z-50">
+                {attendanceNumbers.map((num) => (
+                  <SelectItem key={num} value={num}>{num}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </div>
 
-      <h3 className="text-lg font-semibold text-foreground mb-4">Class Teacher Remarks & Conduct</h3>
+      <h3 className="text-lg font-semibold text-foreground mb-4">Class Teacher Remarks, Conduct & Attendance</h3>
       <p className="text-sm text-muted-foreground mb-4">
-        Select remarks, conduct, and interest for each student. These will appear on their printed report card.
+        Select remarks, conduct, interest, and attendance for each student. These will appear on their printed report card.
       </p>
       <ScrollArea className="h-[400px] pr-4">
         <div className="space-y-3">
@@ -388,7 +412,7 @@ export const TeacherRemarksSelector = ({
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
                 <div>
                   <label className="text-xs text-muted-foreground mb-1 block">Teacher Remark</label>
                   <Select
@@ -440,6 +464,25 @@ export const TeacherRemarksSelector = ({
                       {INTEREST_OPTIONS.map((interest, idx) => (
                         <SelectItem key={idx} value={interest} className="cursor-pointer">
                           {interest}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Total Attendance</label>
+                  <Select
+                    value={learner.attendance?.toString() || ""}
+                    onValueChange={(value) => onAttendanceChange(learner.name, Number(value))}
+                  >
+                    <SelectTrigger className="bg-background">
+                      <SelectValue placeholder="Select days..." />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background z-50">
+                      {attendanceNumbers.map((num) => (
+                        <SelectItem key={num} value={num} className="cursor-pointer">
+                          {num}
                         </SelectItem>
                       ))}
                     </SelectContent>
