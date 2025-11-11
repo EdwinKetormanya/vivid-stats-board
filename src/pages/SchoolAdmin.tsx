@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Users, BookOpen, GraduationCap, ArrowLeft, UserPlus, Trash2, Upload, Download, CheckCircle2, AlertCircle, XCircle, Search } from "lucide-react";
+import { Loader2, Users, BookOpen, GraduationCap, ArrowLeft, UserPlus, Trash2, Upload, Download, CheckCircle2, AlertCircle, XCircle, Search, X } from "lucide-react";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
 import {
@@ -960,8 +960,17 @@ const SchoolAdmin = () => {
                 placeholder="Search by email or name..."
                 value={bulkImportSearch}
                 onChange={(e) => setBulkImportSearch(e.target.value)}
-                className="pl-9"
+                className="pl-9 pr-9"
               />
+              {bulkImportSearch && (
+                <button
+                  onClick={() => setBulkImportSearch("")}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="Clear search"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
             </div>
             
             {/* Filter Tabs */}
