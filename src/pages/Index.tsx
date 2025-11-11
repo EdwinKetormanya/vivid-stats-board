@@ -212,8 +212,17 @@ const Index = () => {
 
           <TabsContent value="dashboard">
             {/* Upload Section - Compact button style */}
-            <div className="flex justify-center mb-6">
+            <div className="flex justify-center mb-6 gap-4 flex-wrap">
               <FileUpload onFileSelect={handleFileSelect} />
+              {learners.length > 0 && (
+                <Button
+                  onClick={handlePrint}
+                  className="px-4 py-2 bg-gradient-to-r from-primary to-accent text-white rounded-md font-medium hover:shadow-lg transition-all duration-300"
+                >
+                  <Printer className="w-4 h-4 mr-2" />
+                  Print All Reports
+                </Button>
+              )}
             </div>
 
             {/* Dashboard Content - Show when data is loaded */}
@@ -353,21 +362,14 @@ const Index = () => {
                   stats={stats}
                 />
                 
-                {/* Download and Print Buttons */}
-                <div className="flex justify-center gap-4 no-print flex-wrap">
+                {/* Download Button */}
+                <div className="flex justify-center no-print">
                   <Button
                     onClick={handleDownloadExcel}
                     className="px-8 py-3 bg-gradient-to-r from-success to-success/80 text-white rounded-lg font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105"
                   >
                     <Download className="w-5 h-5 mr-2" />
                     Download Excel
-                  </Button>
-                  <Button
-                    onClick={handlePrint}
-                    className="px-8 py-3 bg-gradient-to-r from-primary to-accent text-white rounded-lg font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105"
-                  >
-                    <Printer className="w-5 h-5 mr-2" />
-                    Print All Reports
                   </Button>
                 </div>
               </div>
