@@ -11,9 +11,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Upload, X } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 
 interface TeacherRemarksSelectorProps {
   learners: LearnerScore[];
@@ -25,11 +26,13 @@ interface TeacherRemarksSelectorProps {
   numberOnRoll: string;
   vacationDate: Date | undefined;
   reopeningDate: Date | undefined;
+  schoolLogo: string;
   onTermChange: (term: string) => void;
   onYearChange: (year: string) => void;
   onNumberOnRollChange: (number: string) => void;
   onVacationDateChange: (date: Date | undefined) => void;
   onReopeningDateChange: (date: Date | undefined) => void;
+  onSchoolLogoChange: (logo: string) => void;
 }
 
 const TEACHER_REMARKS = [
@@ -82,20 +85,87 @@ export const TeacherRemarksSelector = ({
   numberOnRoll,
   vacationDate,
   reopeningDate,
+  schoolLogo,
   onTermChange,
   onYearChange,
   onNumberOnRollChange,
   onVacationDateChange,
-  onReopeningDateChange
+  onReopeningDateChange,
+  onSchoolLogoChange
 }: TeacherRemarksSelectorProps) => {
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 10 }, (_, i) => (currentYear - 5 + i).toString());
   const rollNumbers = Array.from({ length: 100 }, (_, i) => (i + 1).toString());
 
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        onSchoolLogoChange(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveLogo = () => {
+    onSchoolLogoChange("");
+  };
+
   return (
     <Card className="p-6">
       <h2 className="text-xl font-bold mb-6">Report Card Settings</h2>
       
+      {/* School Logo Upload */}
+      <div className="mb-6 pb-6 border-b">
+        <h3 className="text-lg font-semibold mb-4">School Logo</h3>
+        <div className="flex items-start gap-4">
+          <div className="flex-1">
+            <label className="text-sm font-medium mb-2 block">Upload School Logo</label>
+            <div className="flex items-center gap-2">
+              <Input
+                id="logo-upload"
+                type="file"
+                accept="image/*"
+                onChange={handleLogoUpload}
+                className="hidden"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => document.getElementById('logo-upload')?.click()}
+                className="flex items-center gap-2"
+              >
+                <Upload className="w-4 h-4" />
+                Choose Logo
+              </Button>
+              {schoolLogo && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  onClick={handleRemoveLogo}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Upload your school logo (PNG, JPG, or SVG recommended)
+            </p>
+          </div>
+          {schoolLogo && (
+            <div className="flex-shrink-0">
+              <img 
+                src={schoolLogo} 
+                alt="School Logo" 
+                className="w-20 h-20 object-contain border rounded-lg"
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Global Settings */}
       <div className="mb-6 pb-6 border-b">
         <h3 className="text-lg font-semibold mb-4">Term Information</h3>

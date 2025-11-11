@@ -21,6 +21,7 @@ const Index = () => {
   const [numberOnRoll, setNumberOnRoll] = useState<string>("30");
   const [vacationDate, setVacationDate] = useState<Date | undefined>();
   const [reopeningDate, setReopeningDate] = useState<Date | undefined>();
+  const [schoolLogo, setSchoolLogo] = useState<string>("");
 
   const handlePrint = () => {
     window.print();
@@ -36,7 +37,8 @@ const Index = () => {
           year,
           numberOnRoll,
           vacationDate,
-          reopeningDate
+          reopeningDate,
+          schoolLogo
         } : learner
       )
     );
@@ -52,7 +54,8 @@ const Index = () => {
           year,
           numberOnRoll,
           vacationDate,
-          reopeningDate
+          reopeningDate,
+          schoolLogo
         } : learner
       )
     );
@@ -68,7 +71,8 @@ const Index = () => {
           year,
           numberOnRoll,
           vacationDate,
-          reopeningDate
+          reopeningDate,
+          schoolLogo
         } : learner
       )
     );
@@ -258,11 +262,13 @@ const Index = () => {
                 numberOnRoll={numberOnRoll}
                 vacationDate={vacationDate}
                 reopeningDate={reopeningDate}
+                schoolLogo={schoolLogo}
                 onTermChange={setTerm}
                 onYearChange={setYear}
                 onNumberOnRollChange={setNumberOnRoll}
                 onVacationDateChange={setVacationDate}
                 onReopeningDateChange={setReopeningDate}
+                onSchoolLogoChange={setSchoolLogo}
               />
             </div>
 

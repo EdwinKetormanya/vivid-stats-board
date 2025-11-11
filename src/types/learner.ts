@@ -22,6 +22,7 @@ export interface LearnerScore {
   numberOnRoll?: string;
   vacationDate?: Date;
   reopeningDate?: Date;
+  schoolLogo?: string;
   remarks?: {
     englishLanguage?: string;
     mathematics?: string;

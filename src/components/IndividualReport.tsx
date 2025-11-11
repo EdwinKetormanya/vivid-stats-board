@@ -26,6 +26,15 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
     <div className="print-page bg-white text-black p-12 h-[297mm] w-[210mm] flex flex-col">
       {/* Header */}
       <div className="text-center mb-4 border-b-2 border-gray-800 pb-2">
+        {learner.schoolLogo && (
+          <div className="flex justify-center mb-2">
+            <img 
+              src={learner.schoolLogo} 
+              alt="School Logo" 
+              className="h-16 w-auto object-contain"
+            />
+          </div>
+        )}
         <h1 className="text-2xl font-bold mb-1">Student Performance Report</h1>
         <div className="grid grid-cols-3 gap-2 text-xs text-gray-600 mt-2">
           <div><span className="font-semibold">Term:</span> {learner.term || "Not Set"}</div>
