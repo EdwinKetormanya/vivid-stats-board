@@ -5,6 +5,7 @@ import { PerformanceChart } from "@/components/PerformanceChart";
 import { LeaderboardTable } from "@/components/LeaderboardTable";
 import { InsightsPanel } from "@/components/InsightsPanel";
 import { PrintReports } from "@/components/PrintReports";
+import { TeacherRemarksSelector } from "@/components/TeacherRemarksSelector";
 import { Users, TrendingUp, Trophy, BarChart3, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { parseExcelFile, calculateSubjectPerformance, calculateDashboardStats } from "@/utils/dataParser";
@@ -18,6 +19,14 @@ const Index = () => {
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleTeacherRemarkChange = (learnerName: string, remark: string) => {
+    setLearners((prevLearners) =>
+      prevLearners.map((learner) =>
+        learner.name === learnerName ? { ...learner, teacherRemark: remark } : learner
+      )
+    );
   };
 
   const handleFileSelect = async (file: File) => {
@@ -190,6 +199,14 @@ const Index = () => {
                 Top 10 Performers
               </h3>
               <LeaderboardTable learners={topLearners} />
+            </div>
+
+            {/* Teacher Remarks Section */}
+            <div className="space-y-4">
+              <TeacherRemarksSelector 
+                learners={learners} 
+                onRemarkChange={handleTeacherRemarkChange}
+              />
             </div>
 
             {/* Insights and Recommendations */}

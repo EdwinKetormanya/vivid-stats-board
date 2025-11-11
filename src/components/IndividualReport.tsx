@@ -76,7 +76,7 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
       </div>
 
       {/* Performance Summary */}
-      <div className="mb-5">
+      <div className="mb-4">
         <Card className="p-4 bg-gray-50 border-2 border-gray-300">
           <h3 className="text-sm font-bold mb-3">Performance Summary</h3>
           <div className="space-y-1.5 text-sm">
@@ -100,6 +100,16 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
           </div>
         </Card>
       </div>
+
+      {/* Class Teacher Remark */}
+      {learner.teacherRemark && (
+        <div className="mb-4">
+          <Card className="p-4 bg-blue-50 border-2 border-blue-300">
+            <h3 className="text-sm font-bold mb-2">Class Teacher&apos;s Remark</h3>
+            <p className="text-sm italic text-gray-700">{learner.teacherRemark}</p>
+          </Card>
+        </div>
+      )}
 
       {/* Footer */}
       <div className="pt-5 border-t-2 border-gray-300 mt-auto">
