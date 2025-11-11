@@ -533,13 +533,13 @@ const handleSchoolLogoChange = async (logoBase64: string) => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col gap-4">
             {/* System Title with Logo */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center justify-center gap-4">
               <img 
                 src={kpsBrandLogo} 
                 alt="KPS Logo" 
                 className="h-16 w-16 object-contain"
               />
-              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent tracking-wide">
+              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent tracking-wide text-center">
                 BASIC SCHOOLS LEARNING OUTCOME SYSTEM
               </h1>
             </div>
