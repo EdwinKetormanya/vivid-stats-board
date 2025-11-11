@@ -46,6 +46,7 @@ interface TeacherRemarksSelectorProps {
   onAttendanceChange: (learnerName: string, attendance: number) => void;
   onAttendanceOutOfChange: (attendanceOutOf: number) => void;
   attendanceOutOf: number;
+  onStatusChange: (learnerName: string, status: string) => void;
 }
 
 const TEACHER_REMARKS = [
@@ -113,13 +114,39 @@ export const TeacherRemarksSelector = ({
   onSchoolNameChange,
   onAttendanceChange,
   onAttendanceOutOfChange,
-  attendanceOutOf
+  attendanceOutOf,
+  onStatusChange
 }: TeacherRemarksSelectorProps) => {
   const [availableSchools, setAvailableSchools] = useState<Array<{ id: string; name: string }>>([]);
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 10 }, (_, i) => (currentYear - 5 + i).toString());
   const rollNumbers = Array.from({ length: 100 }, (_, i) => (i + 1).toString());
   const attendanceNumbers = Array.from({ length: 201 }, (_, i) => i.toString());
+
+  const statusOptions = [
+    "Promoted to KG1",
+    "Promoted to KG2",
+    "Promoted to Basic 1",
+    "Promoted to Basic 2",
+    "Promoted to Basic 3",
+    "Promoted to Basic 4",
+    "Promoted to Basic 5",
+    "Promoted to Basic 6",
+    "Promoted to Basic 7",
+    "Promoted to Basic 8",
+    "Promoted to Basic 9",
+    "Repeated KG1",
+    "Repeated KG2",
+    "Repeated Basic 1",
+    "Repeated Basic 2",
+    "Repeated Basic 3",
+    "Repeated Basic 4",
+    "Repeated Basic 5",
+    "Repeated Basic 6",
+    "Repeated Basic 7",
+    "Repeated Basic 8",
+    "Repeated Basic 9",
+  ];
 
 
   useEffect(() => {
@@ -412,7 +439,7 @@ export const TeacherRemarksSelector = ({
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
                 <div>
                   <label className="text-xs text-muted-foreground mb-1 block">Teacher Remark</label>
                   <Select
@@ -483,6 +510,25 @@ export const TeacherRemarksSelector = ({
                       {attendanceNumbers.map((num) => (
                         <SelectItem key={num} value={num} className="cursor-pointer">
                           {num}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Status</label>
+                  <Select
+                    value={learner.status || ""}
+                    onValueChange={(value) => onStatusChange(learner.name, value)}
+                  >
+                    <SelectTrigger className="bg-background">
+                      <SelectValue placeholder="Select status..." />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background z-50">
+                      {statusOptions.map((status, idx) => (
+                        <SelectItem key={idx} value={status} className="cursor-pointer">
+                          {status}
                         </SelectItem>
                       ))}
                     </SelectContent>

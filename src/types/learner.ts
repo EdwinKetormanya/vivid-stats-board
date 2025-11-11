@@ -29,6 +29,7 @@ export interface LearnerScore {
   schoolName?: string;
   attendance?: number;
   attendanceOutOf?: number;
+  status?: string;
   remarks?: {
     englishLanguage?: string;
     mathematics?: string;

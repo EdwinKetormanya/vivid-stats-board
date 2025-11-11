@@ -117,6 +117,15 @@ const Index = () => {
       }))
     );
   };
+
+  const handleStatusChange = (learnerName: string, status: string) => {
+    setLearners((prevLearners) =>
+      prevLearners.map((learner) =>
+        learner.name === learnerName ? { ...learner, status } : learner
+      )
+    );
+  };
+
   const handleFileSelect = async (file: File) => {
     setLoading(true);
     try {
@@ -374,10 +383,11 @@ const Index = () => {
                     onRegionChange={handleRegionChange}
                     onDistrictChange={handleDistrictChange}
                     onSchoolNameChange={handleSchoolNameChange}
-                    onAttendanceChange={handleAttendanceChange}
-                    onAttendanceOutOfChange={handleAttendanceOutOfChange}
-                    attendanceOutOf={attendanceOutOf}
-                  />
+            onAttendanceChange={handleAttendanceChange}
+            onAttendanceOutOfChange={handleAttendanceOutOfChange}
+            attendanceOutOf={attendanceOutOf}
+            onStatusChange={handleStatusChange}
+          />
                 </div>
 
                 {/* Insights and Recommendations */}

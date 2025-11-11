@@ -135,10 +135,10 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
         </Card>
       </div>
 
-      {/* Conduct, Interest, and Attendance */}
+      {/* Conduct, Interest, Attendance, and Status */}
       <div className="mb-3">
         <Card className="p-3 bg-gray-50 border-2 border-gray-300">
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-4 gap-4">
             <div>
               <p className="text-xs font-semibold text-gray-600 mb-1">Conduct</p>
               <p className="text-sm font-bold">{learner.conduct || "Not Set"}</p>
@@ -154,6 +154,10 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
                   ? `${learner.attendance} / ${learner.attendanceOutOf}`
                   : "Not Set"}
               </p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-gray-600 mb-1">Status</p>
+              <p className="text-sm font-bold">{learner.status || "Not Set"}</p>
             </div>
           </div>
         </Card>
