@@ -16,7 +16,6 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { regions, ghanaRegionsDistricts } from "@/data/ghanaRegionsDistricts";
-import { useState } from "react";
 
 interface TeacherRemarksSelectorProps {
   learners: LearnerScore[];
@@ -32,7 +31,6 @@ interface TeacherRemarksSelectorProps {
   region: string;
   district: string;
   schoolName: string;
-  schools: string[];
   onTermChange: (term: string) => void;
   onYearChange: (year: string) => void;
   onNumberOnRollChange: (number: string) => void;
@@ -42,8 +40,6 @@ interface TeacherRemarksSelectorProps {
   onRegionChange: (region: string) => void;
   onDistrictChange: (district: string) => void;
   onSchoolNameChange: (schoolName: string) => void;
-  onAddSchool: (school: string) => void;
-  onRemoveSchool: (school: string) => void;
 }
 
 const TEACHER_REMARKS = [
@@ -100,7 +96,6 @@ export const TeacherRemarksSelector = ({
   region,
   district,
   schoolName,
-  schools,
   onTermChange,
   onYearChange,
   onNumberOnRollChange,
@@ -109,11 +104,8 @@ export const TeacherRemarksSelector = ({
   onSchoolLogoChange,
   onRegionChange,
   onDistrictChange,
-  onSchoolNameChange,
-  onAddSchool,
-  onRemoveSchool
+  onSchoolNameChange
 }: TeacherRemarksSelectorProps) => {
-  const [newSchool, setNewSchool] = useState("");
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 10 }, (_, i) => (currentYear - 5 + i).toString());
   const rollNumbers = Array.from({ length: 100 }, (_, i) => (i + 1).toString());
@@ -131,13 +123,6 @@ export const TeacherRemarksSelector = ({
 
   const handleRemoveLogo = () => {
     onSchoolLogoChange("");
-  };
-
-  const handleAddSchool = () => {
-    if (newSchool.trim() && !schools.includes(newSchool.trim())) {
-      onAddSchool(newSchool.trim());
-      setNewSchool("");
-    }
   };
 
   const districts = region ? ghanaRegionsDistricts[region] || [] : [];
@@ -189,53 +174,12 @@ export const TeacherRemarksSelector = ({
         </div>
 
         <div className="mb-4">
-          <label className="text-sm font-medium mb-2 block">Manage Schools</label>
-          <div className="flex gap-2 mb-2">
-            <Input
-              placeholder="Add school name"
-              value={newSchool}
-              onChange={(e) => setNewSchool(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleAddSchool()}
-            />
-            <Button onClick={handleAddSchool} type="button" size="icon">
-              <Plus className="w-4 h-4" />
-            </Button>
-          </div>
-          {schools.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-2">
-              {schools.map((school) => (
-                <div key={school} className="flex items-center gap-1 bg-secondary px-2 py-1 rounded">
-                  <span className="text-sm">{school}</span>
-                  <button
-                    onClick={() => onRemoveSchool(school)}
-                    className="text-destructive hover:text-destructive/80"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="mb-4">
-          <label className="text-sm font-medium mb-2 block">Select School</label>
-          <Select 
-            value={schoolName} 
-            onValueChange={onSchoolNameChange}
-            disabled={schools.length === 0}
-          >
-            <SelectTrigger className="bg-background">
-              <SelectValue placeholder={schools.length === 0 ? "Add schools first" : "Select School"} />
-            </SelectTrigger>
-            <SelectContent className="bg-background z-50">
-              {schools.map((school) => (
-                <SelectItem key={school} value={school}>
-                  {school}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <label className="text-sm font-medium mb-2 block">School Name</label>
+          <Input
+            placeholder="Enter school name"
+            value={schoolName}
+            onChange={(e) => onSchoolNameChange(e.target.value)}
+          />
         </div>
       </div>
       

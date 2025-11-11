@@ -28,7 +28,6 @@ const Index = () => {
   const [region, setRegion] = useState<string>("");
   const [district, setDistrict] = useState<string>("");
   const [schoolName, setSchoolName] = useState<string>("");
-  const [schools, setSchools] = useState<string[]>([]);
 
   const handlePrint = () => {
     window.print();
@@ -146,20 +145,6 @@ const Index = () => {
         description: "Please try again",
       });
       console.error("Error exporting Excel:", error);
-    }
-  };
-
-  const handleAddSchool = (school: string) => {
-    setSchools(prev => [...prev, school]);
-  };
-
-  const handleRemoveSchool = (school: string) => {
-    setSchools(prev => prev.filter(s => s !== school));
-    if (schoolName === school) {
-      setSchoolName("");
-      setLearners((prevLearners) =>
-        prevLearners.map((learner) => ({ ...learner, schoolName: "" }))
-      );
     }
   };
 
@@ -338,7 +323,6 @@ const Index = () => {
                 region={region}
                 district={district}
                 schoolName={schoolName}
-                schools={schools}
                 onTermChange={setTerm}
                 onYearChange={setYear}
                 onNumberOnRollChange={setNumberOnRoll}
@@ -348,8 +332,6 @@ const Index = () => {
                 onRegionChange={handleRegionChange}
                 onDistrictChange={handleDistrictChange}
                 onSchoolNameChange={handleSchoolNameChange}
-                onAddSchool={handleAddSchool}
-                onRemoveSchool={handleRemoveSchool}
               />
             </div>
 
