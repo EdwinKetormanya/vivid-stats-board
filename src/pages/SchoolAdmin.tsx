@@ -98,6 +98,14 @@ const SchoolAdmin = () => {
     role: "teacher" | "school_admin";
     profileId: string;
   } | null>(null);
+  
+  // Bulk import confirmation state
+  const [bulkConfirmDialogOpen, setBulkConfirmDialogOpen] = useState(false);
+  const [pendingBulkTeachers, setPendingBulkTeachers] = useState<Array<{
+    email: string;
+    fullName?: string;
+    role: "teacher" | "school_admin";
+  }>>([]);
 
   useEffect(() => {
     if (!profileLoading && !hasRole("school_admin") && !hasRole("super_admin")) {
@@ -329,13 +337,35 @@ const SchoolAdmin = () => {
         return;
       }
 
+      // Show confirmation dialog with preview
+      setPendingBulkTeachers(teachersToProcess);
+      setBulkConfirmDialogOpen(true);
+      setIsUploading(false);
+
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    } catch (error) {
+      console.error("Error processing file:", error);
+      toast.error("Failed to process the Excel file");
+      setIsUploading(false);
+    }
+  };
+
+  const confirmBulkImport = async () => {
+    if (pendingBulkTeachers.length === 0 || !profile?.school_id) return;
+
+    setIsUploading(true);
+    setBulkConfirmDialogOpen(false);
+
+    try {
       let successCount = 0;
       let notFoundCount = 0;
       let errorCount = 0;
-      const results: string[] = [];
 
       // Process each teacher
-      for (const teacher of teachersToProcess) {
+      for (const teacher of pendingBulkTeachers) {
         try {
           // Find user by email
           const { data: profileData, error: profileError } = await supabase
@@ -346,13 +376,11 @@ const SchoolAdmin = () => {
 
           if (profileError) {
             errorCount++;
-            results.push(`${teacher.email}: Error - ${profileError.message}`);
             continue;
           }
 
           if (!profileData) {
             notFoundCount++;
-            results.push(`${teacher.email}: User not found (needs to sign up first)`);
             continue;
           }
 
@@ -364,7 +392,6 @@ const SchoolAdmin = () => {
 
           if (updateError) {
             errorCount++;
-            results.push(`${teacher.email}: Failed to assign school`);
             continue;
           }
 
@@ -379,20 +406,15 @@ const SchoolAdmin = () => {
 
           if (roleError) {
             // If duplicate, it's not really an error
-            if (roleError.code === "23505") {
-              results.push(`${teacher.email}: Already has this role`);
-            } else {
+            if (roleError.code !== "23505") {
               errorCount++;
-              results.push(`${teacher.email}: Failed to assign role`);
             }
             continue;
           }
 
           successCount++;
-          results.push(`${teacher.email}: Successfully added as ${teacher.role}`);
         } catch (error) {
           errorCount++;
-          results.push(`${teacher.email}: Unexpected error`);
         }
       }
 
@@ -410,13 +432,10 @@ const SchoolAdmin = () => {
         toast.error(`${errorCount} teacher(s) failed to add`);
       }
 
-      // Reset file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+      setPendingBulkTeachers([]);
     } catch (error) {
-      console.error("Error processing file:", error);
-      toast.error("Failed to process the Excel file");
+      console.error("Error importing teachers:", error);
+      toast.error("Failed to import teachers");
     } finally {
       setIsUploading(false);
     }
@@ -857,6 +876,54 @@ const SchoolAdmin = () => {
             </AlertDialogCancel>
             <AlertDialogAction onClick={confirmAddTeacher}>
               Add Teacher
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Bulk Import Confirmation Dialog */}
+      <AlertDialog open={bulkConfirmDialogOpen} onOpenChange={setBulkConfirmDialogOpen}>
+        <AlertDialogContent className="max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Bulk Teacher Import</AlertDialogTitle>
+            <AlertDialogDescription>
+              Review the {pendingBulkTeachers.length} teacher(s) before importing. Users must have signed up before they can be added to your school.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          
+          <div className="overflow-auto flex-1 py-4">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-12">#</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Role</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {pendingBulkTeachers.map((teacher, index) => (
+                  <TableRow key={index}>
+                    <TableCell className="font-medium">{index + 1}</TableCell>
+                    <TableCell className="font-mono text-sm">{teacher.email}</TableCell>
+                    <TableCell>{teacher.fullName || <span className="text-muted-foreground italic">Not provided</span>}</TableCell>
+                    <TableCell>
+                      <Badge variant={teacher.role === "school_admin" ? "default" : "secondary"}>
+                        {teacher.role === "school_admin" ? "School Admin" : "Teacher"}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+          
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPendingBulkTeachers([])}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmBulkImport}>
+              Import {pendingBulkTeachers.length} Teacher{pendingBulkTeachers.length !== 1 ? 's' : ''}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
