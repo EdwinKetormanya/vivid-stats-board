@@ -54,14 +54,17 @@ export const calculateSubjectPerformance = (learners: LearnerScore[]): SubjectPe
     { key: "history", name: "History" },
     { key: "computing", name: "Computing" },
     { key: "rme", name: "RME" },
-    { key: "creativeArts", name: "Arts" },
+    { key: "creativeArts", name: "Creative Arts" },
     { key: "owop", name: "OWOP" },
     { key: "ghanaianLanguage", name: "Ghanaian Lang" },
     { key: "french", name: "French" },
   ];
   
   return subjects.map(({ key, name }) => {
-    const scores = learners.map((l) => l[key as keyof LearnerScore] as number);
+    const scores = learners.map((l) => {
+      const v = l[key as keyof LearnerScore] as number;
+      return Number.isFinite(v) ? v : 0;
+    });
     const average = scores.length > 0 
       ? scores.reduce((a, b) => a + b, 0) / scores.length 
       : 0;
