@@ -33,9 +33,17 @@ const Index = () => {
 
   const stats = calculateDashboardStats(learners);
   const subjectPerformance = calculateSubjectPerformance(learners);
+  
+  // Categorize learners by performance level
+  const aboveAverage = learners.filter(l => l.averageScore > stats.averageScore);
+  const onAverage = learners.filter(l => 
+    l.averageScore >= stats.averageScore - 5 && l.averageScore <= stats.averageScore + 5
+  );
+  const belowAverage = learners.filter(l => l.averageScore < stats.averageScore - 5);
+  
   const topLearners = [...learners]
     .sort((a, b) => b.totalRawScore - a.totalRawScore)
-    .slice(0, 5)
+    .slice(0, 10)
     .map((l) => ({
       name: l.name,
       position: l.position,
@@ -106,8 +114,71 @@ const Index = () => {
               <PerformanceChart data={subjectPerformance} />
             </div>
 
-            {/* Leaderboard */}
-            <LeaderboardTable learners={topLearners} />
+            {/* Performance Categories */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-success" />
+                  Above Average ({aboveAverage.length})
+                </h3>
+                <LeaderboardTable 
+                  learners={aboveAverage
+                    .sort((a, b) => b.totalRawScore - a.totalRawScore)
+                    .slice(0, 5)
+                    .map((l) => ({
+                      name: l.name,
+                      position: l.position,
+                      totalScore: l.totalRawScore,
+                      averageScore: l.averageScore,
+                    }))} 
+                />
+              </div>
+              
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                  <Users className="w-5 h-5 text-warning" />
+                  On Average ({onAverage.length})
+                </h3>
+                <LeaderboardTable 
+                  learners={onAverage
+                    .sort((a, b) => b.totalRawScore - a.totalRawScore)
+                    .slice(0, 5)
+                    .map((l) => ({
+                      name: l.name,
+                      position: l.position,
+                      totalScore: l.totalRawScore,
+                      averageScore: l.averageScore,
+                    }))} 
+                />
+              </div>
+              
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5 text-destructive" />
+                  Below Average ({belowAverage.length})
+                </h3>
+                <LeaderboardTable 
+                  learners={belowAverage
+                    .sort((a, b) => b.totalRawScore - a.totalRawScore)
+                    .slice(0, 5)
+                    .map((l) => ({
+                      name: l.name,
+                      position: l.position,
+                      totalScore: l.totalRawScore,
+                      averageScore: l.averageScore,
+                    }))} 
+                />
+              </div>
+            </div>
+
+            {/* Top Performers */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                <Trophy className="w-5 h-5 text-accent" />
+                Top 10 Performers
+              </h3>
+              <LeaderboardTable learners={topLearners} />
+            </div>
 
             {/* Insights and Recommendations */}
             <InsightsPanel

@@ -30,22 +30,22 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
     if (stats.averageScore >= 40) {
       insights.push({
         type: "success",
-        title: "Strong Overall Performance",
-        description: `Class average of ${stats.averageScore}% indicates solid academic foundation. Students are performing above satisfactory levels.`,
+        title: "Strong Performance",
+        description: `Class average: ${stats.averageScore}%. Solid academic foundation.`,
         icon: CheckCircle
       });
     } else if (stats.averageScore >= 30) {
       insights.push({
         type: "warning",
-        title: "Moderate Performance Level",
-        description: `Class average of ${stats.averageScore}% suggests room for improvement. Consider targeted interventions.`,
+        title: "Moderate Performance",
+        description: `Class average: ${stats.averageScore}%. Room for improvement.`,
         icon: AlertCircle
       });
     } else {
       insights.push({
         type: "concern",
-        title: "Performance Needs Attention",
-        description: `Class average of ${stats.averageScore}% is below expected standards. Immediate action required.`,
+        title: "Low Performance",
+        description: `Class average: ${stats.averageScore}%. Immediate action needed.`,
         icon: TrendingDown
       });
     }
@@ -57,8 +57,8 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
     if (weakSubjects.length > 0) {
       insights.push({
         type: "concern",
-        title: "Subjects Requiring Intervention",
-        description: `${weakSubjects.map(s => s.subject).join(", ")} showing low averages (below 30%). These areas need immediate attention and additional support.`,
+        title: "Weak Subjects",
+        description: `${weakSubjects.map(s => s.subject).join(", ")} below 30%. Need intervention.`,
         icon: BookOpen
       });
     }
@@ -66,8 +66,8 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
     if (strongSubjects.length > 0) {
       insights.push({
         type: "success",
-        title: "High-Performing Subjects",
-        description: `${strongSubjects.map(s => s.subject).join(", ")} demonstrating excellent results. Consider sharing best practices from these classes.`,
+        title: "Strong Subjects",
+        description: `${strongSubjects.map(s => s.subject).join(", ")} above 40%. Share best practices.`,
         icon: Award
       });
     }
@@ -80,8 +80,8 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
     if (strugglingStudents > learners.length * 0.3) {
       insights.push({
         type: "concern",
-        title: "Significant Number of Struggling Students",
-        description: `${percentStruggling}% of students (${strugglingStudents} out of ${learners.length}) are below 30% average. This indicates a need for systemic intervention.`,
+        title: "Many Struggling Students",
+        description: `${percentStruggling}% (${strugglingStudents}/${learners.length}) below 30%. Systemic intervention needed.`,
         icon: Users
       });
     }
@@ -90,8 +90,8 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
       const percentHigh = (highPerformers / learners.length * 100).toFixed(1);
       insights.push({
         type: "success",
-        title: "Strong Student Achievement",
-        description: `${percentHigh}% of students (${highPerformers} out of ${learners.length}) are performing above 40% average, showing effective learning outcomes.`,
+        title: "High Achievers",
+        description: `${percentHigh}% (${highPerformers}/${learners.length}) above 40%. Effective learning outcomes.`,
         icon: TrendingUp
       });
     }
@@ -104,8 +104,8 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
     if (gap > 20) {
       insights.push({
         type: "warning",
-        title: "Wide Performance Gap Detected",
-        description: `${gap.toFixed(1)}% difference between top and bottom performers suggests varying learning needs. Differentiated instruction recommended.`,
+        title: "Wide Performance Gap",
+        description: `${gap.toFixed(1)}% gap between top/bottom. Use differentiated instruction.`,
         icon: AlertCircle
       });
     }
@@ -122,8 +122,8 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
       recommendations.push({
         priority: "high",
         category: "Academic Intervention",
-        action: `Implement intensive remedial program for ${subject.subject}`,
-        rationale: `Current average of ${subject.average}% is critically low. Suggest additional teaching hours, tutoring sessions, and revised teaching methods.`
+        action: `Intensive remedial program for ${subject.subject}`,
+        rationale: `Average ${subject.average}% critically low. Add teaching hours and tutoring.`
       });
     });
 
@@ -133,8 +133,8 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
       recommendations.push({
         priority: "high",
         category: "Student Support",
-        action: `Establish individualized support plans for ${strugglingStudents.length} struggling students`,
-        rationale: `Students scoring below 30% need one-on-one attention, diagnostic assessments, and tailored learning strategies.`
+        action: `Create support plans for ${strugglingStudents.length} struggling students`,
+        rationale: `Students below 30% need one-on-one attention and tailored strategies.`
       });
     }
 
@@ -144,8 +144,8 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
       recommendations.push({
         priority: "high",
         category: "Teaching Quality",
-        action: `Review teaching methodologies for ${consistentlyLowSubjects.map(s => s.subject).join(", ")}`,
-        rationale: `Low class averages combined with low highest scores suggest potential issues with curriculum delivery or assessment methods.`
+        action: `Review teaching methods for ${consistentlyLowSubjects.map(s => s.subject).join(", ")}`,
+        rationale: `Low averages + low highest scores suggest curriculum delivery issues.`
       });
     }
 
@@ -153,8 +153,8 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
     recommendations.push({
       priority: "medium",
       category: "Performance Monitoring",
-      action: "Implement bi-weekly progress assessments",
-      rationale: "Regular monitoring will help identify struggling students early and measure effectiveness of interventions."
+      action: "Bi-weekly progress assessments",
+      rationale: "Regular monitoring identifies struggling students early."
     });
 
     // Resource allocation
@@ -163,8 +163,8 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
       recommendations.push({
         priority: "medium",
         category: "Resource Allocation",
-        action: `Allocate additional resources to ${subjectsNeedingResources.map(s => s.subject).join(", ")}`,
-        rationale: "These subjects are performing below class average and may benefit from additional teaching materials, technology, or learning aids."
+        action: `Add resources to ${subjectsNeedingResources.map(s => s.subject).join(", ")}`,
+        rationale: "Below-average subjects need more teaching materials and aids."
       });
     }
 
@@ -174,8 +174,8 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
       recommendations.push({
         priority: "high",
         category: "Parent Engagement",
-        action: `Schedule urgent parent-teacher conferences for ${criticalStudents.length} at-risk students`,
-        rationale: "Students with averages below 25% require collaborative intervention involving parents, teachers, and counselors."
+        action: `Parent-teacher conferences for ${criticalStudents.length} at-risk students`,
+        rationale: "Students below 25% need collaborative parent-teacher-counselor intervention."
       });
     }
 
@@ -185,8 +185,8 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
       recommendations.push({
         priority: "low",
         category: "Best Practices",
-        action: `Document and share successful teaching strategies from ${strongSubjects.map(s => s.subject).join(", ")}`,
-        rationale: "High-performing subjects demonstrate effective practices that could benefit other subject areas."
+        action: `Share teaching strategies from ${strongSubjects.map(s => s.subject).join(", ")}`,
+        rationale: "High-performing subjects have practices that benefit other areas."
       });
     }
 
@@ -196,8 +196,8 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
       recommendations.push({
         priority: "medium",
         category: "Peer Learning",
-        action: "Establish peer tutoring program with top-performing students",
-        rationale: `${topPerformers.length} high achievers can mentor struggling peers, reinforcing their own knowledge while helping others.`
+        action: "Peer tutoring program with top students",
+        rationale: `${topPerformers.length} high achievers can mentor struggling peers.`
       });
     }
 
