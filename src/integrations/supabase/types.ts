@@ -97,6 +97,39 @@ export type Database = {
           },
         ]
       }
+      import_history: {
+        Row: {
+          created_at: string
+          failure_count: number
+          id: string
+          import_type: string
+          imported_by: string
+          school_id: string
+          success_count: number
+          teachers_imported: Json
+        }
+        Insert: {
+          created_at?: string
+          failure_count?: number
+          id?: string
+          import_type: string
+          imported_by: string
+          school_id: string
+          success_count?: number
+          teachers_imported: Json
+        }
+        Update: {
+          created_at?: string
+          failure_count?: number
+          id?: string
+          import_type?: string
+          imported_by?: string
+          school_id?: string
+          success_count?: number
+          teachers_imported?: Json
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

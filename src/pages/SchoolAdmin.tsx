@@ -134,6 +134,17 @@ const SchoolAdmin = () => {
     teachers: any;
     created_at: string;
   }>>([]);
+  const [importHistoryDialogOpen, setImportHistoryDialogOpen] = useState(false);
+  const [importHistory, setImportHistory] = useState<Array<{
+    id: string;
+    import_type: string;
+    teachers_imported: any;
+    success_count: number;
+    failure_count: number;
+    created_at: string;
+    imported_by: string;
+    importer_name?: string;
+  }>>([]);
 
   useEffect(() => {
     if (!profileLoading && !hasRole("school_admin") && !hasRole("super_admin")) {
@@ -344,6 +355,57 @@ const SchoolAdmin = () => {
     }
   };
 
+  const loadImportHistory = async () => {
+    if (!profile?.school_id) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("import_history")
+        .select(`
+          *,
+          importer:imported_by (
+            full_name
+          )
+        `)
+        .eq("school_id", profile.school_id)
+        .order("created_at", { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      
+      const historyWithNames = (data || []).map((item: any) => ({
+        ...item,
+        importer_name: item.importer?.full_name || "Unknown",
+      }));
+      
+      setImportHistory(historyWithNames);
+    } catch (error) {
+      console.error("Error loading import history:", error);
+    }
+  };
+
+  const logImport = async (
+    importType: "single" | "bulk",
+    teachersImported: Array<{ email: string; role: string; success: boolean }>,
+    successCount: number,
+    failureCount: number
+  ) => {
+    if (!profile?.school_id) return;
+
+    try {
+      await supabase.from("import_history").insert({
+        school_id: profile.school_id,
+        imported_by: profile.id,
+        import_type: importType,
+        teachers_imported: teachersImported,
+        success_count: successCount,
+        failure_count: failureCount,
+      });
+    } catch (error) {
+      console.error("Error logging import:", error);
+    }
+  };
+
   const handleAddTeacher = async () => {
     if (!newTeacherEmail.trim() || !profile?.school_id) {
       toast.error("Please enter a teacher's email");
@@ -401,6 +463,14 @@ const SchoolAdmin = () => {
         });
 
       if (roleError) throw roleError;
+
+      // Log the import
+      await logImport(
+        "single",
+        [{ email: pendingTeacher.email, role: pendingTeacher.role, success: true }],
+        1,
+        0
+      );
 
       toast.success(`${pendingTeacher.role === "teacher" ? "Teacher" : "School admin"} added successfully`);
       setNewTeacherEmail("");
@@ -868,6 +938,16 @@ const SchoolAdmin = () => {
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold">Teachers & Admins</h2>
             <div className="flex gap-2">
+              <Button 
+                onClick={() => {
+                  loadImportHistory();
+                  setImportHistoryDialogOpen(true);
+                }} 
+                variant="outline"
+              >
+                <BookOpen className="w-4 h-4 mr-2" />
+                Import History
+              </Button>
               <Button onClick={handleExportTeachers} variant="outline" disabled={teachers.length === 0}>
                 <Download className="w-4 h-4 mr-2" />
                 Export List
@@ -1912,6 +1992,80 @@ const SchoolAdmin = () => {
                       >
                         <Trash2 className="w-4 h-4 text-destructive" />
                       </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Close</AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Import History Dialog */}
+      <AlertDialog open={importHistoryDialogOpen} onOpenChange={setImportHistoryDialogOpen}>
+        <AlertDialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Import History</AlertDialogTitle>
+            <AlertDialogDescription>
+              View recent teacher import activity for your school (last 50 imports)
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex-1 overflow-auto py-4">
+            {importHistory.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">No import history available</p>
+            ) : (
+              <div className="space-y-3">
+                {importHistory.map((record) => (
+                  <div
+                    key={record.id}
+                    className="p-4 border rounded-lg hover:bg-muted/30"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={record.import_type === "bulk" ? "default" : "secondary"}>
+                            {record.import_type === "bulk" ? "Bulk Import" : "Single Import"}
+                          </Badge>
+                          <span className="text-sm text-muted-foreground">
+                            {new Date(record.created_at).toLocaleString()}
+                          </span>
+                        </div>
+                        <p className="text-sm font-medium mt-1">
+                          Imported by: {record.importer_name}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <div className="flex items-center gap-4 text-sm">
+                          <span className="flex items-center gap-1 text-green-600">
+                            <CheckCircle2 className="w-4 h-4" />
+                            {record.success_count} Success
+                          </span>
+                          {record.failure_count > 0 && (
+                            <span className="flex items-center gap-1 text-red-600">
+                              <XCircle className="w-4 h-4" />
+                              {record.failure_count} Failed
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-2">
+                      <p className="text-xs text-muted-foreground font-medium mb-1">Teachers:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {record.teachers_imported.slice(0, 5).map((teacher: any, idx: number) => (
+                          <Badge key={idx} variant="outline" className="text-xs">
+                            {teacher.email}
+                          </Badge>
+                        ))}
+                        {record.teachers_imported.length > 5 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{record.teachers_imported.length - 5} more
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
