@@ -15,15 +15,14 @@ export const FileUpload = ({ onFileSelect }: FileUploadProps) => {
 
   return (
     <Card className="border-2 border-dashed border-primary/30 bg-gradient-to-br from-primary/5 to-accent/5 hover:border-primary/50 transition-all duration-300">
-      <label htmlFor="file-upload" className="flex flex-col items-center justify-center p-12 cursor-pointer">
-        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-accent/80 flex items-center justify-center mb-4 shadow-lg">
-          <Upload className="w-10 h-10 text-white" />
+      <label htmlFor="file-upload" className="flex items-center justify-center gap-3 p-4 cursor-pointer">
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent/80 flex items-center justify-center shadow-lg">
+          <Upload className="w-5 h-5 text-white" />
         </div>
-        <h3 className="text-xl font-semibold text-foreground mb-2">Upload Learner Scores</h3>
-        <p className="text-muted-foreground text-center max-w-sm">
-          Drop your Excel or CSV file here, or click to browse
-        </p>
-        <p className="text-sm text-muted-foreground mt-2">Supported formats: .xlsx, .xls, .csv</p>
+        <div>
+          <h3 className="text-sm font-semibold text-foreground">Upload Learner Scores</h3>
+          <p className="text-xs text-muted-foreground">Excel or CSV file (.xlsx, .xls, .csv)</p>
+        </div>
         <input
           id="file-upload"
           type="file"
