@@ -2123,7 +2123,89 @@ const SchoolAdmin = () => {
       <AlertDialog open={importHistoryDialogOpen} onOpenChange={setImportHistoryDialogOpen}>
         <AlertDialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col">
           <AlertDialogHeader>
-            <AlertDialogTitle>Import History</AlertDialogTitle>
+            <AlertDialogTitle className="flex items-center justify-between">
+              <span>Import History</span>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    if (importHistory.length === 0) {
+                      toast.error("No history to export");
+                      return;
+                    }
+
+                    const exportData = importHistory.map(record => ({
+                      "Import Type": record.import_type === "bulk" ? "Bulk Import" : "Single Import",
+                      "Imported By": record.importer_name,
+                      "Success Count": record.success_count,
+                      "Failure Count": record.failure_count,
+                      "Teachers": record.teachers_imported.map((t: any) => t.email).join(", "),
+                      "Date": new Date(record.created_at).toLocaleString(),
+                    }));
+
+                    const ws = XLSX.utils.json_to_sheet(exportData);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, "Import History");
+                    XLSX.writeFile(wb, `import-history-${new Date().toISOString().split('T')[0]}.xlsx`);
+                    toast.success("Export successful");
+                  }}
+                  disabled={importHistory.length === 0}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Export Excel
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    if (importHistory.length === 0) {
+                      toast.error("No history to export");
+                      return;
+                    }
+
+                    const { default: jsPDF } = await import("jspdf");
+                    const { default: autoTable } = await import("jspdf-autotable");
+
+                    const doc = new jsPDF();
+                    
+                    // Add title
+                    doc.setFontSize(16);
+                    doc.text("Import History Report", 14, 15);
+                    doc.setFontSize(10);
+                    doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 22);
+                    doc.text(`School: ${school?.name || "N/A"}`, 14, 27);
+
+                    // Prepare table data
+                    const tableData = importHistory.map(record => [
+                      record.import_type === "bulk" ? "Bulk" : "Single",
+                      record.importer_name,
+                      record.success_count.toString(),
+                      record.failure_count.toString(),
+                      record.teachers_imported.slice(0, 3).map((t: any) => t.email).join(", ") + 
+                        (record.teachers_imported.length > 3 ? `... +${record.teachers_imported.length - 3}` : ""),
+                      new Date(record.created_at).toLocaleDateString(),
+                    ]);
+
+                    // Add table
+                    autoTable(doc, {
+                      head: [["Type", "Imported By", "Success", "Failed", "Teachers", "Date"]],
+                      body: tableData,
+                      startY: 32,
+                      styles: { fontSize: 8 },
+                      headStyles: { fillColor: [66, 139, 202] },
+                    });
+
+                    doc.save(`import-history-${new Date().toISOString().split('T')[0]}.pdf`);
+                    toast.success("PDF export successful");
+                  }}
+                  disabled={importHistory.length === 0}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Export PDF
+                </Button>
+              </div>
+            </AlertDialogTitle>
             <AlertDialogDescription>
               View recent teacher import activity for your school (last 50 imports)
             </AlertDialogDescription>
