@@ -11,7 +11,7 @@ import { InsightsPanel } from "@/components/InsightsPanel";
 import { PrintReports } from "@/components/PrintReports";
 import { TeacherRemarksSelector } from "@/components/TeacherRemarksSelector";
 import { Footer } from "@/components/Footer";
-import { Users, TrendingUp, Trophy, BarChart3, Printer, Download, LogOut, GraduationCap, Plus, Shield, FileDown } from "lucide-react";
+import { Users, TrendingUp, Trophy, BarChart3, Printer, Download, LogOut, GraduationCap, Plus, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -19,7 +19,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { parseExcelFile, calculateSubjectPerformance, calculateDashboardStats } from "@/utils/dataParser";
 import { exportToExcel } from "@/utils/excelExporter";
-import { exportMultiplePDF, exportIndividualPDF } from "@/utils/pdfExporter";
 import { LearnerScore } from "@/types/learner";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -449,34 +448,6 @@ const Index = () => {
     }
   };
 
-  const handleExportAllPDF = async () => {
-    if (!selectedClassId || students.length === 0) {
-      toast.error("No data to export");
-      return;
-    }
-
-    try {
-      const selectedClass = classes.find((c) => c.id === selectedClassId);
-      const fileName = `${school?.name || 'school'}-${selectedClass?.name || 'class'}-reports.pdf`;
-      toast.info("Generating PDF... This may take a moment.");
-      await exportMultiplePDF(students, stats.averageScore, fileName);
-      toast.success("PDF exported successfully!");
-    } catch (error) {
-      toast.error("Failed to export PDF");
-      console.error("Error exporting PDF:", error);
-    }
-  };
-
-  const handleExportIndividualPDF = async (learner: LearnerScore) => {
-    try {
-      toast.info("Generating PDF...");
-      await exportIndividualPDF(learner, stats.averageScore);
-      toast.success("PDF exported successfully!");
-    } catch (error) {
-      toast.error("Failed to export PDF");
-      console.error("Error exporting PDF:", error);
-    }
-  };
 
   if (profileLoading) {
     return (
@@ -633,10 +604,6 @@ const Index = () => {
                     <Printer className="w-4 h-4 mr-2" />
                     Print All Reports
                   </Button>
-                  <Button onClick={handleExportAllPDF} variant="outline">
-                    <FileDown className="w-4 h-4 mr-2" />
-                    Export All as PDF
-                  </Button>
                   <Button onClick={handleDownloadExcel} variant="outline">
                     <Download className="w-4 h-4 mr-2" />
                     Download Excel
@@ -690,7 +657,6 @@ const Index = () => {
                   onSchoolNameChange={handleSchoolNameChange}
                   attendanceOutOf={students[0]?.attendanceOutOf || 180}
                   onAttendanceOutOfChange={handleAttendanceOutOfChange}
-                  onExportIndividualPDF={handleExportIndividualPDF}
                 />
 
                 {/* Stats Grid */}

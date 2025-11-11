@@ -32,12 +32,10 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
               <img 
                 src={learner.schoolLogo} 
                 alt="School Logo" 
-                className="h-16 w-16 object-contain"
+                className="h-16 w-16 object-contain block"
                 style={{ 
                   printColorAdjust: 'exact', 
-                  WebkitPrintColorAdjust: 'exact',
-                  display: 'block !important',
-                  visibility: 'visible !important'
+                  WebkitPrintColorAdjust: 'exact'
                 }}
               />
             </div>
