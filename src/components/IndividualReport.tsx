@@ -162,7 +162,7 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
               <p className="text-xs font-semibold text-indigo-600 mb-1 uppercase tracking-wide">Attendance</p>
               <p className="text-sm font-bold text-gray-800">
                 {learner.attendance !== undefined 
-                  ? `${learner.attendance}${learner.attendanceOutOf ? ` / ${learner.attendanceOutOf}` : ''}`
+                  ? `${learner.attendance} / ${learner.attendanceOutOf ?? 180}`
                   : "Not Set"}
               </p>
             </div>
