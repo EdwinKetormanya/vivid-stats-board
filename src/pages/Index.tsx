@@ -29,6 +29,22 @@ const Index = () => {
     );
   };
 
+  const handleConductChange = (learnerName: string, conduct: string) => {
+    setLearners((prevLearners) =>
+      prevLearners.map((learner) =>
+        learner.name === learnerName ? { ...learner, conduct } : learner
+      )
+    );
+  };
+
+  const handleInterestChange = (learnerName: string, interest: string) => {
+    setLearners((prevLearners) =>
+      prevLearners.map((learner) =>
+        learner.name === learnerName ? { ...learner, interest } : learner
+      )
+    );
+  };
+
   const handleFileSelect = async (file: File) => {
     setLoading(true);
     try {
@@ -206,6 +222,8 @@ const Index = () => {
               <TeacherRemarksSelector 
                 learners={learners} 
                 onRemarkChange={handleTeacherRemarkChange}
+                onConductChange={handleConductChange}
+                onInterestChange={handleInterestChange}
               />
             </div>
 

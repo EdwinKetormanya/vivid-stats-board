@@ -101,6 +101,22 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
         </Card>
       </div>
 
+      {/* Conduct and Interest */}
+      <div className="mb-4">
+        <Card className="p-4 bg-gray-50 border-2 border-gray-300">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-xs font-semibold text-gray-600 mb-1">Conduct</p>
+              <p className="text-sm font-bold">{learner.conduct || "Not Set"}</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-gray-600 mb-1">Interest</p>
+              <p className="text-sm font-bold">{learner.interest || "Not Set"}</p>
+            </div>
+          </div>
+        </Card>
+      </div>
+
       {/* Class Teacher Remark */}
       {learner.teacherRemark && (
         <div className="mb-4">
@@ -113,14 +129,18 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
 
       {/* Footer */}
       <div className="pt-5 border-t-2 border-gray-300 mt-auto">
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-3 gap-4">
           <div>
-            <p className="mb-2 text-sm">Teacher&apos;s Signature:</p>
-            <div className="border-b-2 border-gray-400 w-40"></div>
+            <p className="mb-2 text-sm">Class Teacher&apos;s Signature:</p>
+            <div className="border-b-2 border-gray-400 w-32"></div>
+          </div>
+          <div>
+            <p className="mb-2 text-sm">Headteacher&apos;s Signature:</p>
+            <div className="border-b-2 border-gray-400 w-32"></div>
           </div>
           <div>
             <p className="mb-2 text-sm">Date:</p>
-            <div className="border-b-2 border-gray-400 w-40"></div>
+            <div className="border-b-2 border-gray-400 w-32"></div>
           </div>
         </div>
       </div>

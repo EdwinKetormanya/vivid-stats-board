@@ -15,6 +15,8 @@ export interface LearnerScore {
   position: string;
   averageScore: number;
   teacherRemark?: string;
+  conduct?: string;
+  interest?: string;
   remarks?: {
     englishLanguage?: string;
     mathematics?: string;
