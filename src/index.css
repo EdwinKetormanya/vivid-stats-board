@@ -1,3 +1,42 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* Print Styles */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  
+  .print-container,
+  .print-container * {
+    visibility: visible;
+  }
+  
+  .print-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+  
+  .print-page {
+    page-break-after: always;
+    width: 210mm;
+    min-height: 297mm;
+    padding: 20mm;
+    margin: 0;
+    background: white !important;
+  }
+  
+  .page-break:last-child .print-page {
+    page-break-after: auto;
+  }
+  
+  @page {
+    size: A4;
+    margin: 0;
+  }
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

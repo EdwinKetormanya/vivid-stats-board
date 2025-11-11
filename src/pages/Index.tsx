@@ -1,10 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FileUpload } from "@/components/FileUpload";
 import { StatCard } from "@/components/StatCard";
 import { PerformanceChart } from "@/components/PerformanceChart";
 import { LeaderboardTable } from "@/components/LeaderboardTable";
 import { InsightsPanel } from "@/components/InsightsPanel";
-import { Users, TrendingUp, Trophy, BarChart3 } from "lucide-react";
+import { PrintReports } from "@/components/PrintReports";
+import { Users, TrendingUp, Trophy, BarChart3, Printer } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { parseExcelFile, calculateSubjectPerformance, calculateDashboardStats } from "@/utils/dataParser";
 import { LearnerScore } from "@/types/learner";
 import { toast } from "sonner";
@@ -12,6 +14,11 @@ import { toast } from "sonner";
 const Index = () => {
   const [learners, setLearners] = useState<LearnerScore[]>([]);
   const [loading, setLoading] = useState(false);
+  const printRef = useRef<HTMLDivElement>(null);
+
+  const handlePrint = () => {
+    window.print();
+  };
 
   const handleFileSelect = async (file: File) => {
     setLoading(true);
@@ -192,11 +199,18 @@ const Index = () => {
               stats={stats}
             />
 
-            {/* Upload New File Button */}
-            <div className="flex justify-center">
+            {/* Upload New File and Print Buttons */}
+            <div className="flex justify-center gap-4 no-print">
+              <Button
+                onClick={handlePrint}
+                className="px-8 py-3 bg-gradient-to-r from-primary to-accent text-white rounded-lg font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105"
+              >
+                <Printer className="w-5 h-5 mr-2" />
+                Print All Reports
+              </Button>
               <label
                 htmlFor="new-file-upload"
-                className="px-8 py-3 bg-gradient-to-r from-primary to-accent text-white rounded-lg font-semibold cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105"
+                className="px-8 py-3 bg-gradient-to-r from-primary to-accent text-white rounded-lg font-semibold cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center"
               >
                 Upload New File
                 <input
@@ -211,6 +225,13 @@ const Index = () => {
                 />
               </label>
             </div>
+          </div>
+        )}
+
+        {/* Hidden Print Reports */}
+        {learners.length > 0 && (
+          <div ref={printRef} className="hidden print:block">
+            <PrintReports learners={learners} classAverage={stats.averageScore} />
           </div>
         )}
       </main>
