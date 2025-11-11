@@ -1103,6 +1103,100 @@ const SchoolAdmin = () => {
                 </div>
               )}
             </div>
+            
+            {/* Re-validate Button */}
+            <div className="px-1 pb-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  if (!profile?.school_id) return;
+                  
+                  setIsUploading(true);
+                  try {
+                    const validatedTeachers = await Promise.all(
+                      pendingBulkTeachers.map(async (teacher) => {
+                        try {
+                          const { data: profileData, error: profileError } = await supabase
+                            .from("profiles")
+                            .select("id, full_name")
+                            .eq("email", teacher.email)
+                            .maybeSingle();
+
+                          if (profileError || !profileData) {
+                            return {
+                              ...teacher,
+                              validationStatus: "not_found" as const,
+                              profileId: undefined,
+                              existingName: undefined,
+                            };
+                          }
+
+                          const { data: existingRole } = await supabase
+                            .from("user_roles")
+                            .select("role")
+                            .eq("user_id", profileData.id)
+                            .eq("school_id", profile.school_id)
+                            .maybeSingle();
+
+                          if (existingRole) {
+                            return {
+                              ...teacher,
+                              validationStatus: "already_added" as const,
+                              profileId: profileData.id,
+                              existingName: profileData.full_name,
+                            };
+                          }
+
+                          return {
+                            ...teacher,
+                            validationStatus: "valid" as const,
+                            profileId: profileData.id,
+                            existingName: profileData.full_name,
+                          };
+                        } catch (error) {
+                          return {
+                            ...teacher,
+                            validationStatus: "not_found" as const,
+                            profileId: undefined,
+                            existingName: undefined,
+                          };
+                        }
+                      })
+                    );
+
+                    setPendingBulkTeachers(validatedTeachers);
+                    
+                    const validCount = validatedTeachers.filter(t => t.validationStatus === "valid").length;
+                    const alreadyAddedCount = validatedTeachers.filter(t => t.validationStatus === "already_added").length;
+                    const notFoundCount = validatedTeachers.filter(t => t.validationStatus === "not_found").length;
+                    
+                    toast.success(
+                      `Re-validation complete: ${validCount} ready, ${alreadyAddedCount} already added, ${notFoundCount} not found`
+                    );
+                  } catch (error) {
+                    console.error("Re-validation error:", error);
+                    toast.error("Failed to re-validate teachers");
+                  } finally {
+                    setIsUploading(false);
+                  }
+                }}
+                disabled={isUploading || pendingBulkTeachers.length === 0}
+                className="w-full"
+              >
+                {isUploading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Re-validating...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                    Re-validate All Teachers
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
           
           <div className="overflow-auto flex-1 py-4">
