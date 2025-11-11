@@ -142,8 +142,8 @@ export default function Auth() {
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
         
         <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-8">
-            <img src={kpsLogo} alt="KPS Logo" className="h-16 w-auto" />
+          <div className="flex items-center justify-center mb-8">
+            <img src={kpsLogo} alt="KPS Logo" className="h-20 w-auto" />
           </div>
           <h1 className="text-4xl font-bold text-white mb-4">
             School Report Management System
