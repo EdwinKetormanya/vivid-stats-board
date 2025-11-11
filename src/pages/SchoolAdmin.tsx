@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Users, BookOpen, GraduationCap, ArrowLeft, UserPlus, Trash2, Upload, Download, CheckCircle2, AlertCircle, XCircle, Search, X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Loader2, Users, BookOpen, GraduationCap, ArrowLeft, UserPlus, Trash2, Upload, Download, CheckCircle2, AlertCircle, XCircle, Search, X, ArrowUpDown, ArrowUp, ArrowDown, Pencil, Check } from "lucide-react";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
 import {
@@ -116,6 +116,9 @@ const SchoolAdmin = () => {
     column: "email" | "name" | "status" | null;
     direction: "asc" | "desc";
   }>({ column: null, direction: "asc" });
+  const [editingTeacher, setEditingTeacher] = useState<number | null>(null);
+  const [editedEmail, setEditedEmail] = useState("");
+  const [isValidatingEdit, setIsValidatingEdit] = useState(false);
 
   useEffect(() => {
     if (!profileLoading && !hasRole("school_admin") && !hasRole("super_admin")) {
@@ -1198,7 +1201,143 @@ const SchoolAdmin = () => {
                         </div>
                       )}
                     </TableCell>
-                    <TableCell className="font-mono text-sm">{teacher.email}</TableCell>
+                    <TableCell className="p-2">
+                      {editingTeacher === index ? (
+                        <div className="flex items-center gap-1">
+                          <Input
+                            type="email"
+                            value={editedEmail}
+                            onChange={(e) => setEditedEmail(e.target.value)}
+                            className="h-8 text-sm font-mono"
+                            autoFocus
+                            onKeyDown={async (e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                if (!editedEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editedEmail)) {
+                                  toast.error("Please enter a valid email address");
+                                  return;
+                                }
+                                
+                                setIsValidatingEdit(true);
+                                try {
+                                  const { data: profileData, error: profileError } = await supabase
+                                    .from("profiles")
+                                    .select("id, full_name")
+                                    .eq("email", editedEmail.trim())
+                                    .maybeSingle();
+
+                                  if (profileError || !profileData) {
+                                    setPendingBulkTeachers(prev => prev.map((t, i) => 
+                                      i === index ? { ...t, email: editedEmail.trim(), validationStatus: "not_found" as const, profileId: undefined, existingName: undefined } : t
+                                    ));
+                                  } else {
+                                    const { data: existingRole } = await supabase
+                                      .from("user_roles")
+                                      .select("role")
+                                      .eq("user_id", profileData.id)
+                                      .eq("school_id", profile.school_id)
+                                      .maybeSingle();
+
+                                    if (existingRole) {
+                                      setPendingBulkTeachers(prev => prev.map((t, i) => 
+                                        i === index ? { ...t, email: editedEmail.trim(), validationStatus: "already_added" as const, profileId: profileData.id, existingName: profileData.full_name } : t
+                                      ));
+                                    } else {
+                                      setPendingBulkTeachers(prev => prev.map((t, i) => 
+                                        i === index ? { ...t, email: editedEmail.trim(), validationStatus: "valid" as const, profileId: profileData.id, existingName: profileData.full_name } : t
+                                      ));
+                                    }
+                                  }
+                                  setEditingTeacher(null);
+                                  toast.success("Email updated and validated");
+                                } catch (error) {
+                                  toast.error("Failed to validate email");
+                                } finally {
+                                  setIsValidatingEdit(false);
+                                }
+                              } else if (e.key === "Escape") {
+                                setEditingTeacher(null);
+                              }
+                            }}
+                          />
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8"
+                            disabled={isValidatingEdit}
+                            onClick={async () => {
+                              if (!editedEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editedEmail)) {
+                                toast.error("Please enter a valid email address");
+                                return;
+                              }
+                              
+                              setIsValidatingEdit(true);
+                              try {
+                                const { data: profileData, error: profileError } = await supabase
+                                  .from("profiles")
+                                  .select("id, full_name")
+                                  .eq("email", editedEmail.trim())
+                                  .maybeSingle();
+
+                                if (profileError || !profileData) {
+                                  setPendingBulkTeachers(prev => prev.map((t, i) => 
+                                    i === index ? { ...t, email: editedEmail.trim(), validationStatus: "not_found" as const, profileId: undefined, existingName: undefined } : t
+                                  ));
+                                } else {
+                                  const { data: existingRole } = await supabase
+                                    .from("user_roles")
+                                    .select("role")
+                                    .eq("user_id", profileData.id)
+                                    .eq("school_id", profile.school_id)
+                                    .maybeSingle();
+
+                                  if (existingRole) {
+                                    setPendingBulkTeachers(prev => prev.map((t, i) => 
+                                      i === index ? { ...t, email: editedEmail.trim(), validationStatus: "already_added" as const, profileId: profileData.id, existingName: profileData.full_name } : t
+                                    ));
+                                  } else {
+                                    setPendingBulkTeachers(prev => prev.map((t, i) => 
+                                      i === index ? { ...t, email: editedEmail.trim(), validationStatus: "valid" as const, profileId: profileData.id, existingName: profileData.full_name } : t
+                                    ));
+                                  }
+                                }
+                                setEditingTeacher(null);
+                                toast.success("Email updated and validated");
+                              } catch (error) {
+                                toast.error("Failed to validate email");
+                              } finally {
+                                setIsValidatingEdit(false);
+                              }
+                            }}
+                          >
+                            {isValidatingEdit ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8"
+                            onClick={() => setEditingTeacher(null)}
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 group">
+                          <span className="font-mono text-sm">{teacher.email}</span>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => {
+                              setEditingTeacher(index);
+                              setEditedEmail(teacher.email);
+                            }}
+                          >
+                            <Pencil className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      )}
+                    </TableCell>
                     <TableCell>
                       {teacher.validationStatus === "valid" || teacher.validationStatus === "already_added" ? (
                         <span className="font-medium">{teacher.existingName || teacher.fullName || <span className="text-muted-foreground italic">Not set</span>}</span>
@@ -1206,10 +1345,24 @@ const SchoolAdmin = () => {
                         <span className="text-muted-foreground italic">User needs to sign up</span>
                       )}
                     </TableCell>
-                    <TableCell>
-                      <Badge variant={teacher.role === "school_admin" ? "default" : "secondary"}>
-                        {teacher.role === "school_admin" ? "School Admin" : "Teacher"}
-                      </Badge>
+                    <TableCell className="p-2">
+                      <Select
+                        value={teacher.role}
+                        onValueChange={(value: "teacher" | "school_admin") => {
+                          setPendingBulkTeachers(prev => prev.map((t, i) => 
+                            i === index ? { ...t, role: value } : t
+                          ));
+                          toast.success("Role updated");
+                        }}
+                      >
+                        <SelectTrigger className="h-8 w-auto">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="teacher">Teacher</SelectItem>
+                          <SelectItem value="school_admin">School Admin</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </TableCell>
                     <TableCell className="text-right">
                       <Button
