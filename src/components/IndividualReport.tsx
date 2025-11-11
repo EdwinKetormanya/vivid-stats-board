@@ -23,37 +23,41 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
   ];
 
   return (
-    <div className="print-page bg-white text-black p-8 h-[297mm] w-[210mm] flex flex-col border-4 border-gray-800">
+    <div className="print-page bg-white text-black p-6 min-h-[297mm] max-w-[210mm] mx-auto flex flex-col border-4 border-gray-800">
       {/* Header with Logo */}
-      <div className="relative mb-3 border-b-2 border-gray-800 pb-2">
-        {learner.schoolLogo && (
-          <img 
-            src={learner.schoolLogo} 
-            alt="School Logo" 
-            className="h-10 w-auto object-contain absolute top-0 left-0"
-          />
-        )}
-        <div className="text-center">
-          <h1 className="text-xl font-bold mb-1">Student Performance Report</h1>
-          {(learner.schoolName || learner.district || learner.region) && (
-            <div className="text-xs text-gray-600 mb-2">
-              {learner.schoolName && <div className="font-semibold">{learner.schoolName}</div>}
-              {learner.district && learner.region && (
-                <div>{learner.district}, {learner.region}</div>
-              )}
+      <div className="relative mb-4 border-b-2 border-gray-800 pb-3">
+        <div className="flex items-start gap-4">
+          {learner.schoolLogo && (
+            <div className="flex-shrink-0">
+              <img 
+                src={learner.schoolLogo} 
+                alt="School Logo" 
+                className="h-16 w-16 object-contain"
+              />
             </div>
           )}
-          <div className="grid grid-cols-3 gap-2 text-xs text-gray-600">
-            <div><span className="font-semibold">Term:</span> {learner.term || "Not Set"}</div>
-            <div><span className="font-semibold">Year:</span> {learner.year || "Not Set"}</div>
-            <div><span className="font-semibold">No. on Roll:</span> {learner.numberOnRoll || "Not Set"}</div>
+          <div className="flex-1 text-center">
+            <h1 className="text-xl font-bold mb-1">Student Performance Report</h1>
+            {(learner.schoolName || learner.district || learner.region) && (
+              <div className="text-xs text-gray-600 mb-2">
+                {learner.schoolName && <div className="font-semibold">{learner.schoolName}</div>}
+                {learner.district && learner.region && (
+                  <div>{learner.district}, {learner.region}</div>
+                )}
+              </div>
+            )}
+            <div className="grid grid-cols-3 gap-2 text-xs text-gray-600">
+              <div><span className="font-semibold">Term:</span> {learner.term || "Not Set"}</div>
+              <div><span className="font-semibold">Year:</span> {learner.year || "Not Set"}</div>
+              <div><span className="font-semibold">No. on Roll:</span> {learner.numberOnRoll || "Not Set"}</div>
+            </div>
+            {(learner.vacationDate || learner.reopeningDate) && (
+              <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 mt-1">
+                <div><span className="font-semibold">Vacation:</span> {learner.vacationDate ? format(learner.vacationDate, "PPP") : "Not Set"}</div>
+                <div><span className="font-semibold">Reopening:</span> {learner.reopeningDate ? format(learner.reopeningDate, "PPP") : "Not Set"}</div>
+              </div>
+            )}
           </div>
-          {(learner.vacationDate || learner.reopeningDate) && (
-            <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 mt-1">
-              <div><span className="font-semibold">Vacation:</span> {learner.vacationDate ? format(learner.vacationDate, "PPP") : "Not Set"}</div>
-              <div><span className="font-semibold">Reopening:</span> {learner.reopeningDate ? format(learner.reopeningDate, "PPP") : "Not Set"}</div>
-            </div>
-          )}
         </div>
       </div>
 
