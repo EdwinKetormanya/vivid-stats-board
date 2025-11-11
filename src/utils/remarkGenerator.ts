@@ -9,6 +9,17 @@ export const getGrade = (score: number): string => {
   return "-";
 };
 
+// Utility function to convert score to WAEC grade equivalent (1-6)
+export const getWAECGrade = (score: number): number | string => {
+  if (score >= 80) return 1; // A - Excellent
+  if (score >= 70) return 2; // B - Very Good
+  if (score >= 60) return 3; // C - Good
+  if (score >= 50) return 4; // D - Credit
+  if (score >= 40) return 5; // E - Pass
+  if (score > 0) return 6; // F - Fail
+  return "-";
+};
+
 // Utility function to generate remarks based on score
 export const generateRemark = (score: number): string => {
   if (score >= 80) return "Excellent";

@@ -1,5 +1,6 @@
 import * as XLSX from 'xlsx';
 import { LearnerScore } from '@/types/learner';
+import { getGrade, getWAECGrade } from './remarkGenerator';
 
 export const exportToExcel = (learners: LearnerScore[], fileName: string = 'learner-reports.xlsx') => {
   // Prepare data for export
@@ -7,15 +8,35 @@ export const exportToExcel = (learners: LearnerScore[], fileName: string = 'lear
     'S/N': learner.sn,
     'Name': learner.name,
     'English Language': learner.englishLanguage,
+    'ENG Grade': getGrade(learner.englishLanguage),
+    'ENG Equiv': getWAECGrade(learner.englishLanguage),
     'Mathematics': learner.mathematics,
+    'MATH Grade': getGrade(learner.mathematics),
+    'MATH Equiv': getWAECGrade(learner.mathematics),
     'Natural Science': learner.naturalScience,
+    'SCI Grade': getGrade(learner.naturalScience),
+    'SCI Equiv': getWAECGrade(learner.naturalScience),
     'History': learner.history,
+    'HIST Grade': getGrade(learner.history),
+    'HIST Equiv': getWAECGrade(learner.history),
     'Computing': learner.computing,
+    'COMP Grade': getGrade(learner.computing),
+    'COMP Equiv': getWAECGrade(learner.computing),
     'RME': learner.rme,
+    'RME Grade': getGrade(learner.rme),
+    'RME Equiv': getWAECGrade(learner.rme),
     'Creative Arts': learner.creativeArts,
+    'ART Grade': getGrade(learner.creativeArts),
+    'ART Equiv': getWAECGrade(learner.creativeArts),
     'OWOP': learner.owop,
+    'OWOP Grade': getGrade(learner.owop),
+    'OWOP Equiv': getWAECGrade(learner.owop),
     'Ghanaian Language': learner.ghanaianLanguage,
+    'GHA Grade': getGrade(learner.ghanaianLanguage),
+    'GHA Equiv': getWAECGrade(learner.ghanaianLanguage),
     'French': learner.french,
+    'FRE Grade': getGrade(learner.french),
+    'FRE Equiv': getWAECGrade(learner.french),
     'Total Raw Score': learner.totalRawScore,
     'Average Score (%)': learner.averageScore.toFixed(2),
     'Total Aggregate': learner.totalAggregate,
@@ -44,15 +65,35 @@ export const exportToExcel = (learners: LearnerScore[], fileName: string = 'lear
     { wch: 5 },  // S/N
     { wch: 25 }, // Name
     { wch: 12 }, // English Language
+    { wch: 8 },  // ENG Grade
+    { wch: 8 },  // ENG Equiv
     { wch: 12 }, // Mathematics
+    { wch: 8 },  // MATH Grade
+    { wch: 8 },  // MATH Equiv
     { wch: 15 }, // Natural Science
+    { wch: 8 },  // SCI Grade
+    { wch: 8 },  // SCI Equiv
     { wch: 10 }, // History
+    { wch: 8 },  // HIST Grade
+    { wch: 8 },  // HIST Equiv
     { wch: 12 }, // Computing
+    { wch: 8 },  // COMP Grade
+    { wch: 8 },  // COMP Equiv
     { wch: 8 },  // RME
+    { wch: 8 },  // RME Grade
+    { wch: 8 },  // RME Equiv
     { wch: 15 }, // Creative Arts
+    { wch: 8 },  // ART Grade
+    { wch: 8 },  // ART Equiv
     { wch: 8 },  // OWOP
+    { wch: 8 },  // OWOP Grade
+    { wch: 8 },  // OWOP Equiv
     { wch: 18 }, // Ghanaian Language
+    { wch: 8 },  // GHA Grade
+    { wch: 8 },  // GHA Equiv
     { wch: 10 }, // French
+    { wch: 8 },  // FRE Grade
+    { wch: 8 },  // FRE Equiv
     { wch: 15 }, // Total Raw Score
     { wch: 15 }, // Average Score
     { wch: 15 }, // Total Aggregate
