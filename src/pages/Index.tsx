@@ -6,9 +6,10 @@ import { LeaderboardTable } from "@/components/LeaderboardTable";
 import { InsightsPanel } from "@/components/InsightsPanel";
 import { PrintReports } from "@/components/PrintReports";
 import { TeacherRemarksSelector } from "@/components/TeacherRemarksSelector";
-import { Users, TrendingUp, Trophy, BarChart3, Printer } from "lucide-react";
+import { Users, TrendingUp, Trophy, BarChart3, Printer, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { parseExcelFile, calculateSubjectPerformance, calculateDashboardStats } from "@/utils/dataParser";
+import { exportToExcel } from "@/utils/excelExporter";
 import { LearnerScore } from "@/types/learner";
 import { toast } from "sonner";
 
@@ -129,6 +130,21 @@ const Index = () => {
     setLearners((prevLearners) =>
       prevLearners.map((learner) => ({ ...learner, schoolName: name }))
     );
+  };
+
+  const handleDownloadExcel = () => {
+    try {
+      const fileName = `learner-reports-${schoolName || 'school'}-${term || 'term'}-${year || 'year'}.xlsx`;
+      exportToExcel(learners, fileName);
+      toast.success("Excel file downloaded successfully!", {
+        description: "Your updated learner data has been exported",
+      });
+    } catch (error) {
+      toast.error("Failed to download Excel file", {
+        description: "Please try again",
+      });
+      console.error("Error exporting Excel:", error);
+    }
   };
 
   const handleAddSchool = (school: string) => {
@@ -337,8 +353,15 @@ const Index = () => {
               stats={stats}
             />
 
-            {/* Upload New File and Print Buttons */}
-            <div className="flex justify-center gap-4 no-print">
+            {/* Upload New File, Download, and Print Buttons */}
+            <div className="flex justify-center gap-4 no-print flex-wrap">
+              <Button
+                onClick={handleDownloadExcel}
+                className="px-8 py-3 bg-gradient-to-r from-success to-success/80 text-white rounded-lg font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105"
+              >
+                <Download className="w-5 h-5 mr-2" />
+                Download Excel
+              </Button>
               <Button
                 onClick={handlePrint}
                 className="px-8 py-3 bg-gradient-to-r from-primary to-accent text-white rounded-lg font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105"
