@@ -67,14 +67,21 @@ const Index = () => {
     }
   }, [profile]);
 
-  // Load students when class is selected
-  useEffect(() => {
-    if (selectedClassId) {
-      loadStudents(selectedClassId);
-    } else {
-      setStudents([]);
-    }
-  }, [selectedClassId]);
+// Load students when class is selected
+useEffect(() => {
+  if (selectedClassId) {
+    loadStudents(selectedClassId);
+  } else {
+    setStudents([]);
+  }
+}, [selectedClassId]);
+
+// Ensure updated school logo reflects on all learners even if loaded earlier
+useEffect(() => {
+  if (school?.logo_url) {
+    setStudents((prev) => prev.map((s) => ({ ...s, schoolLogo: school.logo_url || "" })));
+  }
+}, [school?.logo_url]);
 
   const loadSchool = async (schoolId: string) => {
     try {
@@ -348,24 +355,27 @@ const Index = () => {
     updateClassSettings({ reopening_date: date ? date.toISOString().split('T')[0] : null });
   };
 
-  const handleSchoolLogoChange = async (logoBase64: string) => {
-    if (!profile?.school_id) return;
+const handleSchoolLogoChange = async (logoBase64: string) => {
+  if (!profile?.school_id) return;
 
-    try {
-      const { error } = await supabase
-        .from("schools")
-        .update({ logo_url: logoBase64 })
-        .eq("id", profile.school_id);
+  try {
+    const { error } = await supabase
+      .from("schools")
+      .update({ logo_url: logoBase64 })
+      .eq("id", profile.school_id);
 
-      if (error) throw error;
+    if (error) throw error;
 
-      setSchool((prev) => prev ? { ...prev, logo_url: logoBase64 } : null);
-      toast.success("School logo updated successfully");
-    } catch (error) {
-      console.error("Error updating logo:", error);
-      toast.error("Failed to update school logo");
-    }
-  };
+    // Update school state and propagate to all loaded learners immediately
+    setSchool((prev) => (prev ? { ...prev, logo_url: logoBase64 } : null));
+    setStudents((prev) => prev.map((s) => ({ ...s, schoolLogo: logoBase64 })));
+
+    toast.success("School logo updated successfully");
+  } catch (error) {
+    console.error("Error updating logo:", error);
+    toast.error("Failed to update school logo");
+  }
+};
 
   const handleRegionChange = async (region: string) => {
     if (!profile?.school_id) return;
