@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { FileUpload } from "@/components/FileUpload";
 import { StatCard } from "@/components/StatCard";
@@ -10,7 +11,7 @@ import { InsightsPanel } from "@/components/InsightsPanel";
 import { PrintReports } from "@/components/PrintReports";
 import { TeacherRemarksSelector } from "@/components/TeacherRemarksSelector";
 import { Footer } from "@/components/Footer";
-import { Users, TrendingUp, Trophy, BarChart3, Printer, Download, LogOut, GraduationCap, Plus } from "lucide-react";
+import { Users, TrendingUp, Trophy, BarChart3, Printer, Download, LogOut, GraduationCap, Plus, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -42,7 +43,7 @@ interface School {
 
 const Index = () => {
   const { signOut } = useAuth();
-  const { profile, loading: profileLoading } = useProfile();
+  const { profile, loading: profileLoading, hasRole } = useProfile();
   const [classes, setClasses] = useState<Class[]>([]);
   const [selectedClassId, setSelectedClassId] = useState<string>("");
   const [students, setStudents] = useState<LearnerScore[]>([]);
@@ -394,10 +395,20 @@ const Index = () => {
                 </p>
               </div>
             </div>
-            <Button onClick={signOut} variant="outline" size="sm">
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
-            </Button>
+            <div className="flex items-center gap-2">
+              {hasRole("super_admin") && (
+                <Button asChild variant="outline" size="sm">
+                  <Link to="/super-admin">
+                    <Shield className="w-4 h-4 mr-2" />
+                    Super Admin
+                  </Link>
+                </Button>
+              )}
+              <Button onClick={signOut} variant="outline" size="sm">
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </Button>
+            </div>
           </div>
         </div>
       </header>
