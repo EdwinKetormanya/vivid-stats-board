@@ -206,7 +206,7 @@ const Index = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 pb-24">
         {/* Upload Section */}
         {learners.length === 0 && (
           <div className="max-w-2xl mx-auto mb-12">
