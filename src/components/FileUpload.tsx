@@ -15,7 +15,7 @@ export const FileUpload = ({ onFileSelect }: FileUploadProps) => {
   return (
     <label 
       htmlFor="file-upload" 
-      className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors text-sm font-medium"
+      className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-accent text-white rounded-md font-medium hover:shadow-lg transition-all duration-300 cursor-pointer"
     >
       <Upload className="w-4 h-4" />
       Upload Learner Scores (.xlsx, .xls, .csv)
