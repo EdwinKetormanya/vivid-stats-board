@@ -22,7 +22,9 @@ export const PerformanceChart = ({ data }: PerformanceChartProps) => {
             tick={{ fill: "hsl(var(--foreground))" }}
             angle={-45}
             textAnchor="end"
-            height={100}
+            height={110}
+            interval={0}
+            tickMargin={8}
           />
           <YAxis stroke="hsl(var(--muted-foreground))" tick={{ fill: "hsl(var(--foreground))" }} />
           <Tooltip 

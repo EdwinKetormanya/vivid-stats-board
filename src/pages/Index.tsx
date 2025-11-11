@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FileUpload } from "@/components/FileUpload";
 import { StatCard } from "@/components/StatCard";
 import { PerformanceChart } from "@/components/PerformanceChart";
@@ -33,6 +33,11 @@ const Index = () => {
 
   const stats = calculateDashboardStats(learners);
   const subjectPerformance = calculateSubjectPerformance(learners);
+  useEffect(() => {
+    console.log("Subject Performance:", subjectPerformance);
+    console.log("Has Science:", subjectPerformance.some((s) => s.subject.toLowerCase().includes("science")));
+    console.log("Has Creative Arts:", subjectPerformance.some((s) => s.subject.toLowerCase().includes("creative")));
+  }, [subjectPerformance]);
   
   // Categorize learners by performance level
   const aboveAverage = learners.filter(l => l.averageScore > stats.averageScore);
