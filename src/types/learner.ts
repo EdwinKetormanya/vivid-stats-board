@@ -14,6 +14,7 @@ export interface LearnerScore {
   totalRawScore: number;
   position: string;
   averageScore: number;
+  totalAggregate: number;
   teacherRemark?: string;
   conduct?: string;
   interest?: string;

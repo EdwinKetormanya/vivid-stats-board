@@ -18,6 +18,7 @@ export const exportToExcel = (learners: LearnerScore[], fileName: string = 'lear
     'French': learner.french,
     'Total Raw Score': learner.totalRawScore,
     'Average Score (%)': learner.averageScore.toFixed(2),
+    'Total Aggregate': learner.totalAggregate,
     'Position': learner.position,
     'Teacher Remark': learner.teacherRemark || '',
     'Conduct': learner.conduct || '',
@@ -54,6 +55,7 @@ export const exportToExcel = (learners: LearnerScore[], fileName: string = 'lear
     { wch: 10 }, // French
     { wch: 15 }, // Total Raw Score
     { wch: 15 }, // Average Score
+    { wch: 15 }, // Total Aggregate
     { wch: 10 }, // Position
     { wch: 40 }, // Teacher Remark
     { wch: 15 }, // Conduct

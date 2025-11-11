@@ -117,12 +117,15 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
               <span className="font-bold">{classAverage.toFixed(2)}%</span>
             </div>
             <div className="flex justify-between">
+              <span>Total Aggregate:</span>
+              <span className="font-bold">{learner.totalAggregate}</span>
+            </div>
+            <div className="flex justify-between">
               <span>Performance vs Class:</span>
               <span className={`font-bold ${
-                learner.averageScore > classAverage ? "text-green-600" : "text-red-600"
+                learner.averageScore >= classAverage ? "text-green-600" : "text-orange-600"
               }`}>
-                {learner.averageScore > classAverage ? "Above" : "Below"} Average
-                ({(learner.averageScore - classAverage).toFixed(2)}%)
+                {learner.averageScore >= classAverage ? "Above Average" : "Below Average"}
               </span>
             </div>
           </div>

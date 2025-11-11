@@ -48,8 +48,29 @@ export const parseExcelFile = (file: File): Promise<LearnerScore[]> => {
               averageScore: parseFloat(row["AVERAGE SCORE"]) || 0,
             };
             
+            // Calculate total aggregate: first 4 subjects + best 2 from others
+            const firstFour = [
+              learnerData.mathematics,
+              learnerData.naturalScience,
+              learnerData.englishLanguage,
+              learnerData.history
+            ];
+            
+            const otherSubjects = [
+              learnerData.computing,
+              learnerData.rme,
+              learnerData.creativeArts,
+              learnerData.owop,
+              learnerData.ghanaianLanguage,
+              learnerData.french
+            ].sort((a, b) => b - a); // Sort descending
+            
+            const totalAggregate = firstFour.reduce((sum, score) => sum + score, 0) + 
+                                   otherSubjects[0] + otherSubjects[1];
+            
             return {
               ...learnerData,
+              totalAggregate,
               remarks: generateSubjectRemarks(learnerData),
             };
           })
