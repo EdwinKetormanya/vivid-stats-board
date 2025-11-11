@@ -272,6 +272,7 @@ const SchoolAdmin = () => {
     }
   };
 
+
   const saveTemplate = async () => {
     if (!profile?.school_id || !templateName.trim()) {
       toast.error("Please enter a template name");
