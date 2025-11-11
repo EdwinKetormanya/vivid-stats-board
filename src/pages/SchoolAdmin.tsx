@@ -119,6 +119,9 @@ const SchoolAdmin = () => {
   const [editingTeacher, setEditingTeacher] = useState<number | null>(null);
   const [editedEmail, setEditedEmail] = useState("");
   const [isValidatingEdit, setIsValidatingEdit] = useState(false);
+  const [selectedTeachers, setSelectedTeachers] = useState<Set<number>>(new Set());
+  const [bulkRoleChangeDialogOpen, setBulkRoleChangeDialogOpen] = useState(false);
+  const [bulkRoleChangeValue, setBulkRoleChangeValue] = useState<"teacher" | "school_admin">("teacher");
 
   useEffect(() => {
     if (!profileLoading && !hasRole("school_admin") && !hasRole("super_admin")) {
@@ -982,98 +985,123 @@ const SchoolAdmin = () => {
             </div>
             
             {/* Filter Tabs and Actions */}
-            <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
-              <Tabs value={bulkImportFilter} onValueChange={(v) => setBulkImportFilter(v as "all" | "valid" | "errors")} className="flex-1">
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="all" className="text-xs">
-                    All ({pendingBulkTeachers.length})
-                  </TabsTrigger>
-                  <TabsTrigger value="valid" className="text-xs">
-                    <CheckCircle2 className="w-3 h-3 mr-1" />
-                    Valid ({pendingBulkTeachers.filter(t => t.validationStatus === "valid").length})
-                  </TabsTrigger>
-                  <TabsTrigger value="errors" className="text-xs">
-                    <XCircle className="w-3 h-3 mr-1" />
-                    Errors ({pendingBulkTeachers.filter(t => t.validationStatus === "not_found" || t.validationStatus === "already_added").length})
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-              
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const filteredTeachers = pendingBulkTeachers.filter(teacher => {
-                      // Apply status filter
-                      if (bulkImportFilter === "valid") {
-                        if (teacher.validationStatus !== "valid") return false;
-                      }
-                      if (bulkImportFilter === "errors") {
-                        if (teacher.validationStatus !== "not_found" && teacher.validationStatus !== "already_added") return false;
-                      }
-                      
-                      // Apply search filter
-                      if (bulkImportSearch.trim()) {
-                        const searchLower = bulkImportSearch.toLowerCase();
-                        const emailMatch = teacher.email.toLowerCase().includes(searchLower);
-                        const nameMatch = 
-                          teacher.fullName?.toLowerCase().includes(searchLower) ||
-                          teacher.existingName?.toLowerCase().includes(searchLower);
-                        
-                        if (!emailMatch && !nameMatch) return false;
-                      }
-                      
-                      return true;
-                    });
-
-                    if (filteredTeachers.length === 0) {
-                      toast.error("No teachers to export");
-                      return;
-                    }
-
-                    const exportData = filteredTeachers.map(teacher => ({
-                      Status: teacher.validationStatus === "valid" ? "Ready" : 
-                              teacher.validationStatus === "already_added" ? "Already Added" : "Not Found",
-                      Email: teacher.email,
-                      Name: teacher.existingName || teacher.fullName || "Not set",
-                      Role: teacher.role === "school_admin" ? "School Admin" : "Teacher",
-                    }));
-
-                    const ws = XLSX.utils.json_to_sheet(exportData);
-                    const wb = XLSX.utils.book_new();
-                    XLSX.utils.book_append_sheet(wb, ws, "Preview");
-                    XLSX.writeFile(wb, `bulk-import-preview-${new Date().toISOString().split('T')[0]}.xlsx`);
-                    toast.success(`Exported ${filteredTeachers.length} teacher${filteredTeachers.length !== 1 ? 's' : ''}`);
-                  }}
-                  disabled={pendingBulkTeachers.length === 0}
-                  className="whitespace-nowrap"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Export Preview
-                </Button>
+            <div className="flex flex-col gap-2">
+              <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+                <Tabs value={bulkImportFilter} onValueChange={(v) => setBulkImportFilter(v as "all" | "valid" | "errors")} className="flex-1">
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="all" className="text-xs">
+                      All ({pendingBulkTeachers.length})
+                    </TabsTrigger>
+                    <TabsTrigger value="valid" className="text-xs">
+                      <CheckCircle2 className="w-3 h-3 mr-1" />
+                      Valid ({pendingBulkTeachers.filter(t => t.validationStatus === "valid").length})
+                    </TabsTrigger>
+                    <TabsTrigger value="errors" className="text-xs">
+                      <XCircle className="w-3 h-3 mr-1" />
+                      Errors ({pendingBulkTeachers.filter(t => t.validationStatus === "not_found" || t.validationStatus === "already_added").length})
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
                 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const invalidCount = pendingBulkTeachers.filter(t => 
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const filteredTeachers = pendingBulkTeachers.filter(teacher => {
+                        // Apply status filter
+                        if (bulkImportFilter === "valid") {
+                          if (teacher.validationStatus !== "valid") return false;
+                        }
+                        if (bulkImportFilter === "errors") {
+                          if (teacher.validationStatus !== "not_found" && teacher.validationStatus !== "already_added") return false;
+                        }
+                        
+                        // Apply search filter
+                        if (bulkImportSearch.trim()) {
+                          const searchLower = bulkImportSearch.toLowerCase();
+                          const emailMatch = teacher.email.toLowerCase().includes(searchLower);
+                          const nameMatch = 
+                            teacher.fullName?.toLowerCase().includes(searchLower) ||
+                            teacher.existingName?.toLowerCase().includes(searchLower);
+                          
+                          if (!emailMatch && !nameMatch) return false;
+                        }
+                        
+                        return true;
+                      });
+
+                      if (filteredTeachers.length === 0) {
+                        toast.error("No teachers to export");
+                        return;
+                      }
+
+                      const exportData = filteredTeachers.map(teacher => ({
+                        Status: teacher.validationStatus === "valid" ? "Ready" : 
+                                teacher.validationStatus === "already_added" ? "Already Added" : "Not Found",
+                        Email: teacher.email,
+                        Name: teacher.existingName || teacher.fullName || "Not set",
+                        Role: teacher.role === "school_admin" ? "School Admin" : "Teacher",
+                      }));
+
+                      const ws = XLSX.utils.json_to_sheet(exportData);
+                      const wb = XLSX.utils.book_new();
+                      XLSX.utils.book_append_sheet(wb, ws, "Preview");
+                      XLSX.writeFile(wb, `bulk-import-preview-${new Date().toISOString().split('T')[0]}.xlsx`);
+                      toast.success(`Exported ${filteredTeachers.length} teacher${filteredTeachers.length !== 1 ? 's' : ''}`);
+                    }}
+                    disabled={pendingBulkTeachers.length === 0}
+                    className="whitespace-nowrap"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Export Preview
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const invalidCount = pendingBulkTeachers.filter(t => 
+                        t.validationStatus === "not_found" || t.validationStatus === "already_added"
+                      ).length;
+                      setPendingBulkTeachers(prev => 
+                        prev.filter(t => t.validationStatus === "valid")
+                      );
+                      setSelectedTeachers(new Set());
+                      toast.success(`Removed ${invalidCount} invalid teacher${invalidCount !== 1 ? 's' : ''}`);
+                    }}
+                    disabled={pendingBulkTeachers.filter(t => 
                       t.validationStatus === "not_found" || t.validationStatus === "already_added"
-                    ).length;
-                    setPendingBulkTeachers(prev => 
-                      prev.filter(t => t.validationStatus === "valid")
-                    );
-                    toast.success(`Removed ${invalidCount} invalid teacher${invalidCount !== 1 ? 's' : ''}`);
-                  }}
-                  disabled={pendingBulkTeachers.filter(t => 
-                    t.validationStatus === "not_found" || t.validationStatus === "already_added"
-                  ).length === 0}
-                  className="whitespace-nowrap"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Remove All Invalid
-                </Button>
+                    ).length === 0}
+                    className="whitespace-nowrap"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Remove All Invalid
+                  </Button>
+                </div>
               </div>
+              
+              {/* Bulk Role Change */}
+              {selectedTeachers.size > 0 && (
+                <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
+                  <span className="text-sm font-medium">{selectedTeachers.size} selected</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setBulkRoleChangeDialogOpen(true)}
+                  >
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    Change Role
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedTeachers(new Set())}
+                  >
+                    Clear Selection
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
           
@@ -1081,6 +1109,20 @@ const SchoolAdmin = () => {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-12">
+                    <input
+                      type="checkbox"
+                      checked={selectedTeachers.size === pendingBulkTeachers.length && pendingBulkTeachers.length > 0}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedTeachers(new Set(pendingBulkTeachers.map((_, i) => i)));
+                        } else {
+                          setSelectedTeachers(new Set());
+                        }
+                      }}
+                      className="cursor-pointer"
+                    />
+                  </TableHead>
                   <TableHead 
                     className="w-16 cursor-pointer select-none hover:bg-muted/50"
                     onClick={() => {
@@ -1181,6 +1223,22 @@ const SchoolAdmin = () => {
                     teacher.validationStatus === "already_added" ? "bg-orange-50 dark:bg-orange-950/20" :
                     "bg-green-50 dark:bg-green-950/20"
                   }>
+                    <TableCell className="p-2">
+                      <input
+                        type="checkbox"
+                        checked={selectedTeachers.has(index)}
+                        onChange={(e) => {
+                          const newSet = new Set(selectedTeachers);
+                          if (e.target.checked) {
+                            newSet.add(index);
+                          } else {
+                            newSet.delete(index);
+                          }
+                          setSelectedTeachers(newSet);
+                        }}
+                        className="cursor-pointer"
+                      />
+                    </TableCell>
                     <TableCell>
                       {teacher.validationStatus === "valid" && (
                         <div className="flex items-center gap-1 text-green-600">
@@ -1439,6 +1497,43 @@ const SchoolAdmin = () => {
             </AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteConfirm}>
               Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Bulk Role Change Dialog */}
+      <AlertDialog open={bulkRoleChangeDialogOpen} onOpenChange={setBulkRoleChangeDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Change Role for {selectedTeachers.size} Teacher{selectedTeachers.size !== 1 ? 's' : ''}</AlertDialogTitle>
+            <AlertDialogDescription>
+              Select the new role for the selected teachers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Label htmlFor="bulk-role">New Role</Label>
+            <Select value={bulkRoleChangeValue} onValueChange={(v) => setBulkRoleChangeValue(v as "teacher" | "school_admin")}>
+              <SelectTrigger id="bulk-role">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="teacher">Teacher</SelectItem>
+                <SelectItem value="school_admin">School Admin</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+              setPendingBulkTeachers(prev => prev.map((teacher, index) => 
+                selectedTeachers.has(index) ? { ...teacher, role: bulkRoleChangeValue } : teacher
+              ));
+              toast.success(`Updated role for ${selectedTeachers.size} teacher${selectedTeachers.size !== 1 ? 's' : ''}`);
+              setSelectedTeachers(new Set());
+              setBulkRoleChangeDialogOpen(false);
+            }}>
+              Change Role
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
