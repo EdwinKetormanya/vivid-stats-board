@@ -124,6 +124,7 @@ export const TeacherRemarksSelector = ({
   const attendanceNumbers = Array.from({ length: 201 }, (_, i) => i.toString());
 
   const statusOptions = [
+    "N/A",
     "Promoted to KG1",
     "Promoted to KG2",
     "Promoted to Basic 1",

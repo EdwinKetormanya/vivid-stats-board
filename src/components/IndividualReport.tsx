@@ -25,21 +25,22 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
   return (
     <div className="print-page bg-white text-black p-6 min-h-[297mm] max-w-[210mm] mx-auto flex flex-col border-4 border-gray-800">
       {/* Header with Logo */}
-      <div className="relative mb-4 border-b-2 border-gray-800 pb-3">
-        <div className="flex items-start gap-4">
+      <div className="relative mb-3 border-b-2 border-gray-800 pb-2">
+        <div className="flex items-start gap-3">
           {learner.schoolLogo && (
             <div className="flex-shrink-0">
               <img 
                 src={learner.schoolLogo} 
                 alt="School Logo" 
-                className="h-16 w-16 object-contain"
+                className="h-14 w-14 object-contain print:block"
+                style={{ printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}
               />
             </div>
           )}
           <div className="flex-1 text-center">
-            <h1 className="text-xl font-bold mb-1">Student Performance Report</h1>
+            <h1 className="text-lg font-bold mb-1">Student Performance Report</h1>
             {(learner.schoolName || learner.district || learner.region) && (
-              <div className="text-xs text-gray-600 mb-2">
+              <div className="text-xs text-gray-600 mb-1">
                 {learner.schoolName && <div className="font-semibold">{learner.schoolName}</div>}
                 {learner.district && learner.region && (
                   <div>{learner.district}, {learner.region}</div>
@@ -62,47 +63,47 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
       </div>
 
       {/* Student Information */}
-      <div className="mb-3">
-        <Card className="p-3 bg-gray-50 border-2 border-gray-300">
-          <div className="grid grid-cols-2 gap-3">
+      <div className="mb-2">
+        <Card className="p-2 bg-gray-50 border-2 border-gray-300">
+          <div className="grid grid-cols-2 gap-2">
             <div>
               <p className="text-xs font-semibold text-gray-600">Student Name</p>
-              <p className="text-lg font-bold">{learner.name}</p>
+              <p className="text-base font-bold">{learner.name}</p>
             </div>
             <div>
               <p className="text-xs font-semibold text-gray-600">Position</p>
-              <p className="text-lg font-bold">{learner.position}</p>
+              <p className="text-base font-bold">{learner.position}</p>
             </div>
             <div>
               <p className="text-xs font-semibold text-gray-600">Total Score</p>
-              <p className="text-lg font-bold">{learner.totalRawScore}</p>
+              <p className="text-base font-bold">{learner.totalRawScore}</p>
             </div>
             <div>
               <p className="text-xs font-semibold text-gray-600">Average Score</p>
-              <p className="text-lg font-bold">{learner.averageScore.toFixed(2)}%</p>
+              <p className="text-base font-bold">{learner.averageScore.toFixed(2)}%</p>
             </div>
           </div>
         </Card>
       </div>
 
       {/* Subject Scores */}
-      <div className="mb-3 flex-1">
-        <h2 className="text-sm font-bold mb-1.5 border-b border-gray-400 pb-1">Subject Performance</h2>
-        <div className="space-y-1">
+      <div className="mb-2 flex-1">
+        <h2 className="text-xs font-bold mb-1 border-b border-gray-400 pb-0.5">Subject Performance</h2>
+        <div className="space-y-0.5">
           {subjects.map((subject, index) => (
             <div 
               key={index} 
-              className="grid grid-cols-[1fr_auto_auto_auto_1fr] gap-6 items-center p-1.5 bg-gray-50 border border-gray-300 rounded text-xs"
+              className="grid grid-cols-[1fr_auto_auto_auto_1fr] gap-4 items-center p-1 bg-gray-50 border border-gray-300 rounded text-xs"
             >
-              <span className="font-medium">{subject.label}</span>
-              <span className="font-bold text-sm text-center w-12">{subject.value || 0}</span>
-              <span className="font-bold text-sm text-center w-12 bg-primary text-white rounded px-1">
+              <span className="font-medium text-xs">{subject.label}</span>
+              <span className="font-bold text-xs text-center w-10">{subject.value || 0}</span>
+              <span className="font-bold text-xs text-center w-10 bg-primary text-white rounded px-1">
                 {getGrade(subject.value)}
               </span>
-              <span className="font-bold text-sm text-center w-12 bg-secondary text-secondary-foreground rounded px-1">
+              <span className="font-bold text-xs text-center w-10 bg-secondary text-secondary-foreground rounded px-1">
                 {getBECEGrade(subject.value)}
               </span>
-              <span className="text-gray-600 italic text-right">
+              <span className="text-gray-600 italic text-right text-xs">
                 {learner.remarks?.[subject.key] || "No Score"}
               </span>
             </div>
@@ -111,10 +112,10 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
       </div>
 
       {/* Performance Summary */}
-      <div className="mb-3">
-        <Card className="p-3 bg-gray-50 border-2 border-gray-300">
-          <h3 className="text-xs font-bold mb-2">Performance Summary</h3>
-          <div className="space-y-1 text-xs">
+      <div className="mb-2">
+        <Card className="p-2 bg-gray-50 border-2 border-gray-300">
+          <h3 className="text-xs font-bold mb-1.5">Performance Summary</h3>
+          <div className="space-y-0.5 text-xs">
             <div className="flex justify-between">
               <span>Student Average:</span>
               <span className="font-bold">{learner.averageScore.toFixed(2)}%</span>
@@ -140,29 +141,29 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
       </div>
 
       {/* Conduct, Interest, Attendance, and Status */}
-      <div className="mb-3">
-        <Card className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-indigo-200">
-          <h3 className="text-sm font-bold mb-3 text-indigo-900 border-b border-indigo-200 pb-1.5">Student Assessment</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-white rounded-lg p-3 border border-indigo-100 shadow-sm">
-              <p className="text-xs font-semibold text-indigo-600 mb-1.5 uppercase tracking-wide">Conduct</p>
-              <p className="text-base font-bold text-gray-800">{learner.conduct || "Not Set"}</p>
+      <div className="mb-2">
+        <Card className="p-2 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-indigo-200">
+          <h3 className="text-xs font-bold mb-2 text-indigo-900 border-b border-indigo-200 pb-1">Student Assessment</h3>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="bg-white rounded-lg p-2 border border-indigo-100 shadow-sm">
+              <p className="text-xs font-semibold text-indigo-600 mb-1 uppercase tracking-wide">Conduct</p>
+              <p className="text-sm font-bold text-gray-800">{learner.conduct || "Not Set"}</p>
             </div>
-            <div className="bg-white rounded-lg p-3 border border-indigo-100 shadow-sm">
-              <p className="text-xs font-semibold text-indigo-600 mb-1.5 uppercase tracking-wide">Interest</p>
-              <p className="text-base font-bold text-gray-800">{learner.interest || "Not Set"}</p>
+            <div className="bg-white rounded-lg p-2 border border-indigo-100 shadow-sm">
+              <p className="text-xs font-semibold text-indigo-600 mb-1 uppercase tracking-wide">Interest</p>
+              <p className="text-sm font-bold text-gray-800">{learner.interest || "Not Set"}</p>
             </div>
-            <div className="bg-white rounded-lg p-3 border border-indigo-100 shadow-sm">
-              <p className="text-xs font-semibold text-indigo-600 mb-1.5 uppercase tracking-wide">Attendance</p>
-              <p className="text-base font-bold text-gray-800">
+            <div className="bg-white rounded-lg p-2 border border-indigo-100 shadow-sm">
+              <p className="text-xs font-semibold text-indigo-600 mb-1 uppercase tracking-wide">Attendance</p>
+              <p className="text-sm font-bold text-gray-800">
                 {learner.attendance !== undefined && learner.attendanceOutOf !== undefined 
                   ? `${learner.attendance} / ${learner.attendanceOutOf}`
                   : "Not Set"}
               </p>
             </div>
-            <div className="bg-white rounded-lg p-3 border border-indigo-100 shadow-sm">
-              <p className="text-xs font-semibold text-indigo-600 mb-1.5 uppercase tracking-wide">Status</p>
-              <p className="text-base font-bold text-gray-800">{learner.status || "Not Set"}</p>
+            <div className="bg-white rounded-lg p-2 border border-indigo-100 shadow-sm">
+              <p className="text-xs font-semibold text-indigo-600 mb-1 uppercase tracking-wide">Promotion Status</p>
+              <p className="text-sm font-bold text-gray-800">{learner.status || "Not Set"}</p>
             </div>
           </div>
         </Card>
@@ -170,28 +171,28 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
 
       {/* Class Teacher Remark */}
       {learner.teacherRemark && (
-        <div className="mb-3">
-          <Card className="p-4 bg-gradient-to-br from-amber-50 to-yellow-50 border-2 border-amber-200">
-            <h3 className="text-sm font-bold mb-2 text-amber-900 border-b border-amber-200 pb-1.5">Class Teacher&apos;s Remark</h3>
-            <p className="text-xs leading-relaxed text-gray-800 bg-white rounded-lg p-3 border border-amber-100">{learner.teacherRemark}</p>
+        <div className="mb-2">
+          <Card className="p-2 bg-gradient-to-br from-amber-50 to-yellow-50 border-2 border-amber-200">
+            <h3 className="text-xs font-bold mb-1.5 text-amber-900 border-b border-amber-200 pb-1">Class Teacher&apos;s Remark</h3>
+            <p className="text-xs leading-relaxed text-gray-800 bg-white rounded-lg p-2 border border-amber-100">{learner.teacherRemark}</p>
           </Card>
         </div>
       )}
 
       {/* Footer */}
-      <div className="pt-3 border-t-2 border-gray-300 mt-auto">
-        <div className="grid grid-cols-3 gap-8">
+      <div className="pt-2 border-t-2 border-gray-300 mt-auto">
+        <div className="grid grid-cols-3 gap-6">
           <div>
-            <p className="mb-3 text-xs">Class Teacher&apos;s Signature:</p>
-            <div className="border-b-2 border-gray-400 w-40"></div>
+            <p className="mb-2 text-xs">Class Teacher&apos;s Signature:</p>
+            <div className="border-b-2 border-gray-400 w-32"></div>
           </div>
           <div>
-            <p className="mb-3 text-xs">Headteacher&apos;s Signature:</p>
-            <div className="border-b-2 border-gray-400 w-40"></div>
+            <p className="mb-2 text-xs">Headteacher&apos;s Signature:</p>
+            <div className="border-b-2 border-gray-400 w-32"></div>
           </div>
           <div>
-            <p className="mb-3 text-xs">Date:</p>
-            <div className="border-b-2 border-gray-400 w-40"></div>
+            <p className="mb-2 text-xs">Date:</p>
+            <div className="border-b-2 border-gray-400 w-32"></div>
           </div>
         </div>
       </div>

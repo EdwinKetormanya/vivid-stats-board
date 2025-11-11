@@ -42,8 +42,15 @@
   /* Ensure images print correctly */
   img {
     max-width: 100% !important;
-    print-color-adjust: exact;
-    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
+    display: block !important;
+    visibility: visible !important;
+  }
+  
+  /* Hide elements that shouldn't print */
+  button, nav, .no-print {
+    visibility: hidden !important;
   }
 }
 
