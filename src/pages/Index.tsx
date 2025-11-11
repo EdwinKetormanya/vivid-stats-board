@@ -532,8 +532,13 @@ const handleSchoolLogoChange = async (logoBase64: string) => {
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col gap-4">
-            {/* System Title */}
-            <div className="text-center">
+            {/* System Title with Logo */}
+            <div className="flex items-center gap-4">
+              <img 
+                src={kpsBrandLogo} 
+                alt="KPS Logo" 
+                className="h-16 w-16 object-contain"
+              />
               <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent tracking-wide">
                 BASIC SCHOOLS LEARNING OUTCOME SYSTEM
               </h1>
@@ -554,38 +559,31 @@ const handleSchoolLogoChange = async (logoBase64: string) => {
                   </p>
                 </div>
               </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <img 
-                  src={kpsBrandLogo} 
-                  alt="KPS Logo" 
-                  className="h-16 w-16 object-contain"
-                />
-                <div className="flex items-center gap-2">
-                  {hasRole("school_admin") && (
-                    <Button asChild variant="outline" size="sm">
-                      <Link to="/school-admin">
-                        <Users className="w-4 h-4 mr-2" />
-                        School Admin
-                      </Link>
-                    </Button>
-                  )}
-                  {hasRole("super_admin") && (
-                    <Button asChild variant="outline" size="sm">
-                      <Link to="/super-admin">
-                        <Shield className="w-4 h-4 mr-2" />
-                        Super Admin
-                      </Link>
-                    </Button>
-                  )}
-                  <Button onClick={signOut} variant="outline" size="sm">
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Logout
+              <div className="flex items-center gap-2">
+                {hasRole("school_admin") && (
+                  <Button asChild variant="outline" size="sm">
+                    <Link to="/school-admin">
+                      <Users className="w-4 h-4 mr-2" />
+                      School Admin
+                    </Link>
                   </Button>
-                </div>
+                )}
+                {hasRole("super_admin") && (
+                  <Button asChild variant="outline" size="sm">
+                    <Link to="/super-admin">
+                      <Shield className="w-4 h-4 mr-2" />
+                      Super Admin
+                    </Link>
+                  </Button>
+                )}
+                <Button onClick={signOut} variant="outline" size="sm">
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout
+                </Button>
               </div>
             </div>
           </div>
+        </div>
       </header>
 
       <main className="container mx-auto px-4 py-8 pb-24">
