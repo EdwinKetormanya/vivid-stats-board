@@ -62,11 +62,10 @@ export const calculateSubjectPerformance = (learners: LearnerScore[]): SubjectPe
   
   return subjects.map(({ key, name }) => {
     const scores = learners.map((l) => l[key as keyof LearnerScore] as number);
-    const validScores = scores.filter((s) => s > 0);
-    const average = validScores.length > 0 
-      ? validScores.reduce((a, b) => a + b, 0) / validScores.length 
+    const average = scores.length > 0 
+      ? scores.reduce((a, b) => a + b, 0) / scores.length 
       : 0;
-    const highest = validScores.length > 0 ? Math.max(...validScores) : 0;
+    const highest = scores.length > 0 ? Math.max(...scores) : 0;
     
     return {
       subject: name,
