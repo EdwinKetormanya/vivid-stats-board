@@ -8,6 +8,14 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -16,6 +24,8 @@ export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -93,6 +103,35 @@ export default function Auth() {
     }
   };
 
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}/auth`,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Password reset email sent!",
+        description: "Check your email for the password reset link.",
+      });
+
+      setResetDialogOpen(false);
+      setResetEmail("");
+    } catch (error: any) {
+      toast({
+        title: "Password reset failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
       <Card className="w-full max-w-md p-8">
@@ -145,6 +184,46 @@ export default function Auth() {
                   "Login"
                 )}
               </Button>
+
+              <Dialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button type="button" variant="link" className="w-full text-sm">
+                    Forgot Password?
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Reset Password</DialogTitle>
+                    <DialogDescription>
+                      Enter your email address and we'll send you a link to reset your password.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handlePasswordReset} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="reset-email">Email</Label>
+                      <Input
+                        id="reset-email"
+                        type="email"
+                        placeholder="teacher@school.com"
+                        value={resetEmail}
+                        onChange={(e) => setResetEmail(e.target.value)}
+                        required
+                        disabled={loading}
+                      />
+                    </div>
+                    <Button type="submit" className="w-full" disabled={loading}>
+                      {loading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Sending reset email...
+                        </>
+                      ) : (
+                        "Send Reset Link"
+                      )}
+                    </Button>
+                  </form>
+                </DialogContent>
+              </Dialog>
             </form>
           </TabsContent>
 
