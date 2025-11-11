@@ -6,6 +6,7 @@ import { LeaderboardTable } from "@/components/LeaderboardTable";
 import { InsightsPanel } from "@/components/InsightsPanel";
 import { PrintReports } from "@/components/PrintReports";
 import { TeacherRemarksSelector } from "@/components/TeacherRemarksSelector";
+import { Footer } from "@/components/Footer";
 import { Users, TrendingUp, Trophy, BarChart3, Printer, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { parseExcelFile, calculateSubjectPerformance, calculateDashboardStats } from "@/utils/dataParser";
@@ -396,6 +397,8 @@ const Index = () => {
           </div>
         )}
       </main>
+      
+      <Footer />
     </div>
   );
 };
