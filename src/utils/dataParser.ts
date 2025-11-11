@@ -1,5 +1,6 @@
 import * as XLSX from "xlsx";
 import { LearnerScore, SubjectPerformance, DashboardStats } from "@/types/learner";
+import { generateSubjectRemarks } from "./remarkGenerator";
 
 const getNum = (row: any, candidates: string[]): number => {
   const keyMap = new Map(
@@ -28,23 +29,30 @@ export const parseExcelFile = (file: File): Promise<LearnerScore[]> => {
         const jsonData = XLSX.utils.sheet_to_json(worksheet);
         
         const learners: LearnerScore[] = jsonData
-          .map((row: any) => ({
-            sn: row["S/N"] || 0,
-            name: row["NAME OF LEARNER"] || "",
-            englishLanguage: parseFloat(row["ENGLISH LANGUAGE"]) || 0,
-            mathematics: parseFloat(row["MATHEMATICS"]) || 0,
-            naturalScience: getNum(row, ["NATURAL SCIENCE","SCIENCE","INTEGRATED SCIENCE","NS"]),
-            history: parseFloat(row["HISTORY"]) || 0,
-            computing: parseFloat(row["COMPUTING"]) || 0,
-            rme: parseFloat(row["RME"]) || 0,
-            creativeArts: getNum(row, ["CREATIVE ARTS","CREATIVE ART","ART","VISUAL ARTS"]),
-            owop: parseFloat(row["OWOP"]) || 0,
-            ghanaianLanguage: parseFloat(row["GHANAIAN LANGUAGE"]) || 0,
-            french: parseFloat(row["FRENCH"]) || 0,
-            totalRawScore: parseFloat(row["TOTAL RAW SCORE"]) || 0,
-            position: row["POSITION"] || "",
-            averageScore: parseFloat(row["AVERAGE SCORE"]) || 0,
-          }))
+          .map((row: any) => {
+            const learnerData = {
+              sn: row["S/N"] || 0,
+              name: row["NAME OF LEARNER"] || "",
+              englishLanguage: parseFloat(row["ENGLISH LANGUAGE"]) || 0,
+              mathematics: parseFloat(row["MATHEMATICS"]) || 0,
+              naturalScience: getNum(row, ["NATURAL SCIENCE","SCIENCE","INTEGRATED SCIENCE","NS"]),
+              history: parseFloat(row["HISTORY"]) || 0,
+              computing: parseFloat(row["COMPUTING"]) || 0,
+              rme: parseFloat(row["RME"]) || 0,
+              creativeArts: getNum(row, ["CREATIVE ARTS","CREATIVE ART","ART","VISUAL ARTS"]),
+              owop: parseFloat(row["OWOP"]) || 0,
+              ghanaianLanguage: parseFloat(row["GHANAIAN LANGUAGE"]) || 0,
+              french: parseFloat(row["FRENCH"]) || 0,
+              totalRawScore: parseFloat(row["TOTAL RAW SCORE"]) || 0,
+              position: row["POSITION"] || "",
+              averageScore: parseFloat(row["AVERAGE SCORE"]) || 0,
+            };
+            
+            return {
+              ...learnerData,
+              remarks: generateSubjectRemarks(learnerData),
+            };
+          })
           .filter((learner) => learner.name && learner.totalRawScore > 0);
         
         resolve(learners);

@@ -8,16 +8,16 @@ interface IndividualReportProps {
 
 export const IndividualReport = ({ learner, classAverage }: IndividualReportProps) => {
   const subjects = [
-    { label: "English Language", value: learner.englishLanguage },
-    { label: "Mathematics", value: learner.mathematics },
-    { label: "Natural Science", value: learner.naturalScience },
-    { label: "History", value: learner.history },
-    { label: "Computing", value: learner.computing },
-    { label: "RME", value: learner.rme },
-    { label: "Creative Arts", value: learner.creativeArts },
-    { label: "OWOP", value: learner.owop },
-    { label: "Ghanaian Language", value: learner.ghanaianLanguage },
-    { label: "French", value: learner.french },
+    { label: "English Language", value: learner.englishLanguage, key: "englishLanguage" as const },
+    { label: "Mathematics", value: learner.mathematics, key: "mathematics" as const },
+    { label: "Natural Science", value: learner.naturalScience, key: "naturalScience" as const },
+    { label: "History", value: learner.history, key: "history" as const },
+    { label: "Computing", value: learner.computing, key: "computing" as const },
+    { label: "RME", value: learner.rme, key: "rme" as const },
+    { label: "Creative Arts", value: learner.creativeArts, key: "creativeArts" as const },
+    { label: "OWOP", value: learner.owop, key: "owop" as const },
+    { label: "Ghanaian Language", value: learner.ghanaianLanguage, key: "ghanaianLanguage" as const },
+    { label: "French", value: learner.french, key: "french" as const },
   ];
 
   return (
@@ -53,16 +53,19 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
       </div>
 
       {/* Subject Scores */}
-      <div className="mb-5 flex-1">
-        <h2 className="text-base font-bold mb-3 border-b border-gray-400 pb-1">Subject Performance</h2>
-        <div className="space-y-1.5">
+      <div className="mb-4 flex-1">
+        <h2 className="text-base font-bold mb-2 border-b border-gray-400 pb-1">Subject Performance</h2>
+        <div className="space-y-1">
           {subjects.map((subject, index) => (
             <div 
               key={index} 
-              className="flex justify-between items-center p-2 bg-gray-50 border border-gray-300 rounded"
+              className="grid grid-cols-[1fr_auto_1fr] gap-2 items-center p-1.5 bg-gray-50 border border-gray-300 rounded text-xs"
             >
-              <span className="font-medium text-sm">{subject.label}</span>
-              <span className="font-bold text-base">{subject.value || 0}</span>
+              <span className="font-medium">{subject.label}</span>
+              <span className="font-bold text-sm text-center w-12">{subject.value || 0}</span>
+              <span className="text-gray-600 italic text-right">
+                {learner.remarks?.[subject.key] || "No Score"}
+              </span>
             </div>
           ))}
         </div>

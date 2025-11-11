@@ -14,6 +14,18 @@ export interface LearnerScore {
   totalRawScore: number;
   position: string;
   averageScore: number;
+  remarks?: {
+    englishLanguage?: string;
+    mathematics?: string;
+    naturalScience?: string;
+    history?: string;
+    computing?: string;
+    rme?: string;
+    creativeArts?: string;
+    owop?: string;
+    ghanaianLanguage?: string;
+    french?: string;
+  };
 }
 
 export interface SubjectPerformance {
