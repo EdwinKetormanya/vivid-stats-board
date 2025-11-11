@@ -1000,6 +1000,7 @@ const SchoolAdmin = () => {
                   <TableHead>Email</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Role</TableHead>
+                  <TableHead className="w-16 text-right">Remove</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -1064,6 +1065,18 @@ const SchoolAdmin = () => {
                       <Badge variant={teacher.role === "school_admin" ? "default" : "secondary"}>
                         {teacher.role === "school_admin" ? "School Admin" : "Teacher"}
                       </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          setPendingBulkTeachers(prev => prev.filter((_, i) => i !== index));
+                        }}
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
