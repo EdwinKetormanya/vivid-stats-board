@@ -1,6 +1,20 @@
 import * as XLSX from "xlsx";
 import { LearnerScore, SubjectPerformance, DashboardStats } from "@/types/learner";
 
+const getNum = (row: any, candidates: string[]): number => {
+  const keyMap = new Map(
+    Object.keys(row).map((k) => [k.toLowerCase().trim(), k])
+  );
+  for (const name of candidates) {
+    const key = keyMap.get(String(name).toLowerCase().trim());
+    if (key) {
+      const val = parseFloat(row[key]);
+      if (!isNaN(val)) return val;
+    }
+  }
+  return 0;
+};
+
 export const parseExcelFile = (file: File): Promise<LearnerScore[]> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -19,11 +33,11 @@ export const parseExcelFile = (file: File): Promise<LearnerScore[]> => {
             name: row["NAME OF LEARNER"] || "",
             englishLanguage: parseFloat(row["ENGLISH LANGUAGE"]) || 0,
             mathematics: parseFloat(row["MATHEMATICS"]) || 0,
-            naturalScience: parseFloat(row["NATURAL SCIENCE"]) || 0,
+            naturalScience: getNum(row, ["NATURAL SCIENCE","SCIENCE","INTEGRATED SCIENCE","NS"]),
             history: parseFloat(row["HISTORY"]) || 0,
             computing: parseFloat(row["COMPUTING"]) || 0,
             rme: parseFloat(row["RME"]) || 0,
-            creativeArts: parseFloat(row["CREATIVE ARTS"]) || 0,
+            creativeArts: getNum(row, ["CREATIVE ARTS","CREATIVE ART","ART","VISUAL ARTS"]),
             owop: parseFloat(row["OWOP"]) || 0,
             ghanaianLanguage: parseFloat(row["GHANAIAN LANGUAGE"]) || 0,
             french: parseFloat(row["FRENCH"]) || 0,
