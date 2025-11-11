@@ -5,6 +5,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -109,6 +110,7 @@ const SchoolAdmin = () => {
     profileId?: string;
     existingName?: string;
   }>>([]);
+  const [bulkImportFilter, setBulkImportFilter] = useState<"all" | "valid" | "errors">("all");
 
   useEffect(() => {
     if (!profileLoading && !hasRole("school_admin") && !hasRole("super_admin")) {
@@ -948,6 +950,25 @@ const SchoolAdmin = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           
+          {/* Filter Tabs */}
+          <div className="flex items-center justify-between px-1 pb-2 border-b">
+            <Tabs value={bulkImportFilter} onValueChange={(v) => setBulkImportFilter(v as "all" | "valid" | "errors")} className="w-full">
+              <TabsList className="grid w-full max-w-md grid-cols-3">
+                <TabsTrigger value="all" className="text-xs">
+                  All ({pendingBulkTeachers.length})
+                </TabsTrigger>
+                <TabsTrigger value="valid" className="text-xs">
+                  <CheckCircle2 className="w-3 h-3 mr-1" />
+                  Valid ({pendingBulkTeachers.filter(t => t.validationStatus === "valid").length})
+                </TabsTrigger>
+                <TabsTrigger value="errors" className="text-xs">
+                  <XCircle className="w-3 h-3 mr-1" />
+                  Errors ({pendingBulkTeachers.filter(t => t.validationStatus === "not_found" || t.validationStatus === "already_added").length})
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+          
           <div className="overflow-auto flex-1 py-4">
             <Table>
               <TableHeader>
@@ -959,7 +980,17 @@ const SchoolAdmin = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {pendingBulkTeachers.map((teacher, index) => (
+                {pendingBulkTeachers
+                  .filter(teacher => {
+                    if (bulkImportFilter === "valid") {
+                      return teacher.validationStatus === "valid";
+                    }
+                    if (bulkImportFilter === "errors") {
+                      return teacher.validationStatus === "not_found" || teacher.validationStatus === "already_added";
+                    }
+                    return true; // "all"
+                  })
+                  .map((teacher, index) => (
                   <TableRow key={index} className={
                     teacher.validationStatus === "not_found" ? "bg-red-50 dark:bg-red-950/20" :
                     teacher.validationStatus === "already_added" ? "bg-orange-50 dark:bg-orange-950/20" :
@@ -1000,6 +1031,21 @@ const SchoolAdmin = () => {
                     </TableCell>
                   </TableRow>
                 ))}
+                {pendingBulkTeachers.filter(teacher => {
+                  if (bulkImportFilter === "valid") {
+                    return teacher.validationStatus === "valid";
+                  }
+                  if (bulkImportFilter === "errors") {
+                    return teacher.validationStatus === "not_found" || teacher.validationStatus === "already_added";
+                  }
+                  return true;
+                }).length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                      No teachers to display in this filter
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </div>
