@@ -211,8 +211,8 @@ const Index = () => {
           </TabsList>
 
           <TabsContent value="dashboard">
-            {/* Upload Section - Always at top of dashboard */}
-            <div className="max-w-2xl mx-auto mb-8">
+            {/* Upload Section - Compact version at top */}
+            <div className="max-w-xl mx-auto mb-6">
               <FileUpload onFileSelect={handleFileSelect} />
             </div>
 
