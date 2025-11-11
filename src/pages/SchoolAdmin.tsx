@@ -106,9 +106,10 @@ const SchoolAdmin = () => {
     email: string;
     fullName?: string;
     role: "teacher" | "school_admin";
-    validationStatus: "valid" | "not_found" | "already_added" | "validating";
+    validationStatus: "valid" | "not_found" | "already_added" | "validating" | "duplicate";
     profileId?: string;
     existingName?: string;
+    isDuplicateInList?: boolean;
   }>>([]);
   const [bulkImportFilter, setBulkImportFilter] = useState<"all" | "valid" | "errors">("all");
   const [bulkImportSearch, setBulkImportSearch] = useState("");
@@ -353,10 +354,47 @@ const SchoolAdmin = () => {
         return;
       }
 
+      // Detect duplicates within the uploaded list
+      const emailCounts = new Map<string, number>();
+      teachersToProcess.forEach(teacher => {
+        emailCounts.set(teacher.email, (emailCounts.get(teacher.email) || 0) + 1);
+      });
+
+      const duplicatesFound = Array.from(emailCounts.values()).some(count => count > 1);
+      if (duplicatesFound) {
+        const duplicateCount = Array.from(emailCounts.entries()).filter(([_, count]) => count > 1).length;
+        toast.warning(`Found ${duplicateCount} duplicate email(s) in the file. Only the first occurrence will be kept.`);
+      }
+
+      // Remove duplicates, keeping only the first occurrence
+      const uniqueTeachers: Array<{
+        email: string;
+        fullName?: string;
+        role: "teacher" | "school_admin";
+      }> = [];
+      const seenEmails = new Set<string>();
+      
+      teachersToProcess.forEach(teacher => {
+        if (!seenEmails.has(teacher.email)) {
+          seenEmails.add(teacher.email);
+          uniqueTeachers.push(teacher);
+        }
+      });
+
       // Validate each teacher against the database
       const validatedTeachers = await Promise.all(
-        teachersToProcess.map(async (teacher) => {
+        uniqueTeachers.map(async (teacher) => {
           try {
+            // Check if already in pending list
+            const existingInList = pendingBulkTeachers.find(t => t.email === teacher.email);
+            if (existingInList) {
+              return {
+                ...teacher,
+                validationStatus: "duplicate" as const,
+                isDuplicateInList: true,
+              };
+            }
+
             // Check if user exists
             const { data: profileData, error: profileError } = await supabase
               .from("profiles")
@@ -403,8 +441,15 @@ const SchoolAdmin = () => {
         })
       );
 
-      // Show confirmation dialog with validated preview
-      setPendingBulkTeachers(validatedTeachers);
+      // Append to existing list (filter out duplicates)
+      const nonDuplicates = validatedTeachers.filter(t => t.validationStatus !== "duplicate");
+      setPendingBulkTeachers(prev => [...prev, ...nonDuplicates]);
+      
+      const duplicateCount = validatedTeachers.filter(t => t.validationStatus === "duplicate").length;
+      if (duplicateCount > 0) {
+        toast.info(`Skipped ${duplicateCount} duplicate email(s) already in the list`);
+      }
+      
       setBulkConfirmDialogOpen(true);
       setIsUploading(false);
 
