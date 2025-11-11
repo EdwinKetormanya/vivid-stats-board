@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Users, BookOpen, GraduationCap, ArrowLeft, UserPlus, Trash2, Upload, Download } from "lucide-react";
+import { Loader2, Users, BookOpen, GraduationCap, ArrowLeft, UserPlus, Trash2, Upload, Download, CheckCircle2, AlertCircle, XCircle } from "lucide-react";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
 import {
@@ -105,6 +105,9 @@ const SchoolAdmin = () => {
     email: string;
     fullName?: string;
     role: "teacher" | "school_admin";
+    validationStatus: "valid" | "not_found" | "already_added" | "validating";
+    profileId?: string;
+    existingName?: string;
   }>>([]);
 
   useEffect(() => {
@@ -337,8 +340,58 @@ const SchoolAdmin = () => {
         return;
       }
 
-      // Show confirmation dialog with preview
-      setPendingBulkTeachers(teachersToProcess);
+      // Validate each teacher against the database
+      const validatedTeachers = await Promise.all(
+        teachersToProcess.map(async (teacher) => {
+          try {
+            // Check if user exists
+            const { data: profileData, error: profileError } = await supabase
+              .from("profiles")
+              .select("id, full_name")
+              .eq("email", teacher.email)
+              .maybeSingle();
+
+            if (profileError || !profileData) {
+              return {
+                ...teacher,
+                validationStatus: "not_found" as const,
+              };
+            }
+
+            // Check if already has a role at this school
+            const { data: existingRole } = await supabase
+              .from("user_roles")
+              .select("role")
+              .eq("user_id", profileData.id)
+              .eq("school_id", profile.school_id)
+              .maybeSingle();
+
+            if (existingRole) {
+              return {
+                ...teacher,
+                validationStatus: "already_added" as const,
+                profileId: profileData.id,
+                existingName: profileData.full_name,
+              };
+            }
+
+            return {
+              ...teacher,
+              validationStatus: "valid" as const,
+              profileId: profileData.id,
+              existingName: profileData.full_name,
+            };
+          } catch (error) {
+            return {
+              ...teacher,
+              validationStatus: "not_found" as const,
+            };
+          }
+        })
+      );
+
+      // Show confirmation dialog with validated preview
+      setPendingBulkTeachers(validatedTeachers);
       setBulkConfirmDialogOpen(true);
       setIsUploading(false);
 
@@ -356,59 +409,48 @@ const SchoolAdmin = () => {
   const confirmBulkImport = async () => {
     if (pendingBulkTeachers.length === 0 || !profile?.school_id) return;
 
+    // Filter only valid teachers
+    const validTeachers = pendingBulkTeachers.filter(t => t.validationStatus === "valid");
+    
+    if (validTeachers.length === 0) {
+      toast.error("No valid teachers to import");
+      return;
+    }
+
     setIsUploading(true);
     setBulkConfirmDialogOpen(false);
 
     try {
       let successCount = 0;
-      let notFoundCount = 0;
       let errorCount = 0;
 
-      // Process each teacher
-      for (const teacher of pendingBulkTeachers) {
+      // Process only valid teachers
+      for (const teacher of validTeachers) {
         try {
-          // Find user by email
-          const { data: profileData, error: profileError } = await supabase
-            .from("profiles")
-            .select("id, full_name")
-            .eq("email", teacher.email)
-            .maybeSingle();
-
-          if (profileError) {
-            errorCount++;
-            continue;
-          }
-
-          if (!profileData) {
-            notFoundCount++;
-            continue;
-          }
+          if (!teacher.profileId) continue;
 
           // Update profile with school_id
           const { error: updateError } = await supabase
             .from("profiles")
             .update({ school_id: profile.school_id })
-            .eq("id", profileData.id);
+            .eq("id", teacher.profileId);
 
           if (updateError) {
             errorCount++;
             continue;
           }
 
-          // Add role (check if role already exists)
+          // Add role
           const { error: roleError } = await supabase
             .from("user_roles")
             .insert({
-              user_id: profileData.id,
+              user_id: teacher.profileId,
               role: teacher.role,
               school_id: profile.school_id,
             });
 
           if (roleError) {
-            // If duplicate, it's not really an error
-            if (roleError.code !== "23505") {
-              errorCount++;
-            }
+            errorCount++;
             continue;
           }
 
@@ -424,12 +466,13 @@ const SchoolAdmin = () => {
         loadSchoolData();
       }
 
-      if (notFoundCount > 0) {
-        toast.warning(`${notFoundCount} user(s) not found - they need to sign up first`);
-      }
-
       if (errorCount > 0) {
         toast.error(`${errorCount} teacher(s) failed to add`);
+      }
+
+      const skippedCount = pendingBulkTeachers.length - validTeachers.length;
+      if (skippedCount > 0) {
+        toast.info(`${skippedCount} teacher(s) skipped (not found or already added)`);
       }
 
       setPendingBulkTeachers([]);
@@ -883,11 +926,25 @@ const SchoolAdmin = () => {
 
       {/* Bulk Import Confirmation Dialog */}
       <AlertDialog open={bulkConfirmDialogOpen} onOpenChange={setBulkConfirmDialogOpen}>
-        <AlertDialogContent className="max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
+        <AlertDialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col">
           <AlertDialogHeader>
             <AlertDialogTitle>Confirm Bulk Teacher Import</AlertDialogTitle>
-            <AlertDialogDescription>
-              Review the {pendingBulkTeachers.length} teacher(s) before importing. Users must have signed up before they can be added to your school.
+            <AlertDialogDescription className="space-y-2">
+              <p>Review the {pendingBulkTeachers.length} teacher(s) before importing.</p>
+              <div className="flex gap-4 text-sm">
+                <span className="flex items-center gap-1">
+                  <CheckCircle2 className="w-4 h-4 text-green-600" />
+                  {pendingBulkTeachers.filter(t => t.validationStatus === "valid").length} Ready to import
+                </span>
+                <span className="flex items-center gap-1">
+                  <AlertCircle className="w-4 h-4 text-orange-600" />
+                  {pendingBulkTeachers.filter(t => t.validationStatus === "already_added").length} Already added
+                </span>
+                <span className="flex items-center gap-1">
+                  <XCircle className="w-4 h-4 text-red-600" />
+                  {pendingBulkTeachers.filter(t => t.validationStatus === "not_found").length} Not found
+                </span>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           
@@ -895,7 +952,7 @@ const SchoolAdmin = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-12">#</TableHead>
+                  <TableHead className="w-16">Status</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Role</TableHead>
@@ -903,10 +960,39 @@ const SchoolAdmin = () => {
               </TableHeader>
               <TableBody>
                 {pendingBulkTeachers.map((teacher, index) => (
-                  <TableRow key={index}>
-                    <TableCell className="font-medium">{index + 1}</TableCell>
+                  <TableRow key={index} className={
+                    teacher.validationStatus === "not_found" ? "bg-red-50 dark:bg-red-950/20" :
+                    teacher.validationStatus === "already_added" ? "bg-orange-50 dark:bg-orange-950/20" :
+                    "bg-green-50 dark:bg-green-950/20"
+                  }>
+                    <TableCell>
+                      {teacher.validationStatus === "valid" && (
+                        <div className="flex items-center gap-1 text-green-600">
+                          <CheckCircle2 className="w-4 h-4" />
+                          <span className="text-xs">Ready</span>
+                        </div>
+                      )}
+                      {teacher.validationStatus === "already_added" && (
+                        <div className="flex items-center gap-1 text-orange-600">
+                          <AlertCircle className="w-4 h-4" />
+                          <span className="text-xs">Exists</span>
+                        </div>
+                      )}
+                      {teacher.validationStatus === "not_found" && (
+                        <div className="flex items-center gap-1 text-red-600">
+                          <XCircle className="w-4 h-4" />
+                          <span className="text-xs">Not found</span>
+                        </div>
+                      )}
+                    </TableCell>
                     <TableCell className="font-mono text-sm">{teacher.email}</TableCell>
-                    <TableCell>{teacher.fullName || <span className="text-muted-foreground italic">Not provided</span>}</TableCell>
+                    <TableCell>
+                      {teacher.validationStatus === "valid" || teacher.validationStatus === "already_added" ? (
+                        <span className="font-medium">{teacher.existingName || teacher.fullName || <span className="text-muted-foreground italic">Not set</span>}</span>
+                      ) : (
+                        <span className="text-muted-foreground italic">User needs to sign up</span>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <Badge variant={teacher.role === "school_admin" ? "default" : "secondary"}>
                         {teacher.role === "school_admin" ? "School Admin" : "Teacher"}
@@ -922,8 +1008,11 @@ const SchoolAdmin = () => {
             <AlertDialogCancel onClick={() => setPendingBulkTeachers([])}>
               Cancel
             </AlertDialogCancel>
-            <AlertDialogAction onClick={confirmBulkImport}>
-              Import {pendingBulkTeachers.length} Teacher{pendingBulkTeachers.length !== 1 ? 's' : ''}
+            <AlertDialogAction 
+              onClick={confirmBulkImport}
+              disabled={pendingBulkTeachers.filter(t => t.validationStatus === "valid").length === 0}
+            >
+              Import {pendingBulkTeachers.filter(t => t.validationStatus === "valid").length} Valid Teacher{pendingBulkTeachers.filter(t => t.validationStatus === "valid").length !== 1 ? 's' : ''}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
