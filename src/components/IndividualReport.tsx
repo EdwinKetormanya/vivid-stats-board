@@ -35,6 +35,14 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
         )}
         <div className="text-center">
           <h1 className="text-xl font-bold mb-1">Student Performance Report</h1>
+          {(learner.schoolName || learner.district || learner.region) && (
+            <div className="text-xs text-gray-600 mb-2">
+              {learner.schoolName && <div className="font-semibold">{learner.schoolName}</div>}
+              {learner.district && learner.region && (
+                <div>{learner.district}, {learner.region}</div>
+              )}
+            </div>
+          )}
           <div className="grid grid-cols-3 gap-2 text-xs text-gray-600">
             <div><span className="font-semibold">Term:</span> {learner.term || "Not Set"}</div>
             <div><span className="font-semibold">Year:</span> {learner.year || "Not Set"}</div>

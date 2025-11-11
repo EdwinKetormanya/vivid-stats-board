@@ -23,6 +23,9 @@ export interface LearnerScore {
   vacationDate?: Date;
   reopeningDate?: Date;
   schoolLogo?: string;
+  region?: string;
+  district?: string;
+  schoolName?: string;
   remarks?: {
     englishLanguage?: string;
     mathematics?: string;

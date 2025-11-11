@@ -22,6 +22,10 @@ const Index = () => {
   const [vacationDate, setVacationDate] = useState<Date | undefined>();
   const [reopeningDate, setReopeningDate] = useState<Date | undefined>();
   const [schoolLogo, setSchoolLogo] = useState<string>("");
+  const [region, setRegion] = useState<string>("");
+  const [district, setDistrict] = useState<string>("");
+  const [schoolName, setSchoolName] = useState<string>("");
+  const [schools, setSchools] = useState<string[]>([]);
 
   const handlePrint = () => {
     window.print();
@@ -38,7 +42,10 @@ const Index = () => {
           numberOnRoll,
           vacationDate,
           reopeningDate,
-          schoolLogo
+          schoolLogo,
+          region,
+          district,
+          schoolName,
         } : learner
       )
     );
@@ -55,7 +62,10 @@ const Index = () => {
           numberOnRoll,
           vacationDate,
           reopeningDate,
-          schoolLogo
+          schoolLogo,
+          region,
+          district,
+          schoolName,
         } : learner
       )
     );
@@ -72,7 +82,10 @@ const Index = () => {
           numberOnRoll,
           vacationDate,
           reopeningDate,
-          schoolLogo
+          schoolLogo,
+          region,
+          district,
+          schoolName,
         } : learner
       )
     );
@@ -93,6 +106,42 @@ const Index = () => {
       console.error("Error parsing file:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRegionChange = (newRegion: string) => {
+    setRegion(newRegion);
+    setDistrict(""); // Reset district when region changes
+    setLearners((prevLearners) =>
+      prevLearners.map((learner) => ({ ...learner, region: newRegion, district: "" }))
+    );
+  };
+
+  const handleDistrictChange = (newDistrict: string) => {
+    setDistrict(newDistrict);
+    setLearners((prevLearners) =>
+      prevLearners.map((learner) => ({ ...learner, district: newDistrict }))
+    );
+  };
+
+  const handleSchoolNameChange = (name: string) => {
+    setSchoolName(name);
+    setLearners((prevLearners) =>
+      prevLearners.map((learner) => ({ ...learner, schoolName: name }))
+    );
+  };
+
+  const handleAddSchool = (school: string) => {
+    setSchools(prev => [...prev, school]);
+  };
+
+  const handleRemoveSchool = (school: string) => {
+    setSchools(prev => prev.filter(s => s !== school));
+    if (schoolName === school) {
+      setSchoolName("");
+      setLearners((prevLearners) =>
+        prevLearners.map((learner) => ({ ...learner, schoolName: "" }))
+      );
     }
   };
 
@@ -263,12 +312,21 @@ const Index = () => {
                 vacationDate={vacationDate}
                 reopeningDate={reopeningDate}
                 schoolLogo={schoolLogo}
+                region={region}
+                district={district}
+                schoolName={schoolName}
+                schools={schools}
                 onTermChange={setTerm}
                 onYearChange={setYear}
                 onNumberOnRollChange={setNumberOnRoll}
                 onVacationDateChange={setVacationDate}
                 onReopeningDateChange={setReopeningDate}
                 onSchoolLogoChange={setSchoolLogo}
+                onRegionChange={handleRegionChange}
+                onDistrictChange={handleDistrictChange}
+                onSchoolNameChange={handleSchoolNameChange}
+                onAddSchool={handleAddSchool}
+                onRemoveSchool={handleRemoveSchool}
               />
             </div>
 

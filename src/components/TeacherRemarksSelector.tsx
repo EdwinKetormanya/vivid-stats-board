@@ -11,10 +11,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon, Upload, X } from "lucide-react";
+import { CalendarIcon, Upload, X, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import { regions, ghanaRegionsDistricts } from "@/data/ghanaRegionsDistricts";
+import { useState } from "react";
 
 interface TeacherRemarksSelectorProps {
   learners: LearnerScore[];
@@ -27,12 +29,21 @@ interface TeacherRemarksSelectorProps {
   vacationDate: Date | undefined;
   reopeningDate: Date | undefined;
   schoolLogo: string;
+  region: string;
+  district: string;
+  schoolName: string;
+  schools: string[];
   onTermChange: (term: string) => void;
   onYearChange: (year: string) => void;
   onNumberOnRollChange: (number: string) => void;
   onVacationDateChange: (date: Date | undefined) => void;
   onReopeningDateChange: (date: Date | undefined) => void;
   onSchoolLogoChange: (logo: string) => void;
+  onRegionChange: (region: string) => void;
+  onDistrictChange: (district: string) => void;
+  onSchoolNameChange: (schoolName: string) => void;
+  onAddSchool: (school: string) => void;
+  onRemoveSchool: (school: string) => void;
 }
 
 const TEACHER_REMARKS = [
@@ -86,13 +97,23 @@ export const TeacherRemarksSelector = ({
   vacationDate,
   reopeningDate,
   schoolLogo,
+  region,
+  district,
+  schoolName,
+  schools,
   onTermChange,
   onYearChange,
   onNumberOnRollChange,
   onVacationDateChange,
   onReopeningDateChange,
-  onSchoolLogoChange
+  onSchoolLogoChange,
+  onRegionChange,
+  onDistrictChange,
+  onSchoolNameChange,
+  onAddSchool,
+  onRemoveSchool
 }: TeacherRemarksSelectorProps) => {
+  const [newSchool, setNewSchool] = useState("");
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 10 }, (_, i) => (currentYear - 5 + i).toString());
   const rollNumbers = Array.from({ length: 100 }, (_, i) => (i + 1).toString());
@@ -112,9 +133,111 @@ export const TeacherRemarksSelector = ({
     onSchoolLogoChange("");
   };
 
+  const handleAddSchool = () => {
+    if (newSchool.trim() && !schools.includes(newSchool.trim())) {
+      onAddSchool(newSchool.trim());
+      setNewSchool("");
+    }
+  };
+
+  const districts = region ? ghanaRegionsDistricts[region] || [] : [];
+
   return (
     <Card className="p-6">
       <h2 className="text-xl font-bold mb-6">Report Card Settings</h2>
+      
+      {/* School Information Section */}
+      <div className="mb-6 pb-6 border-b">
+        <h3 className="text-lg font-semibold mb-4">School Information</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label className="text-sm font-medium mb-2 block">Region</label>
+            <Select value={region} onValueChange={onRegionChange}>
+              <SelectTrigger className="bg-background">
+                <SelectValue placeholder="Select Region" />
+              </SelectTrigger>
+              <SelectContent className="bg-background z-50">
+                {regions.map((r) => (
+                  <SelectItem key={r} value={r}>
+                    {r}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium mb-2 block">District</label>
+            <Select 
+              value={district} 
+              onValueChange={onDistrictChange}
+              disabled={!region}
+            >
+              <SelectTrigger className="bg-background">
+                <SelectValue placeholder={region ? "Select District" : "Select Region First"} />
+              </SelectTrigger>
+              <SelectContent className="bg-background z-50">
+                {districts.map((d) => (
+                  <SelectItem key={d} value={d}>
+                    {d}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <label className="text-sm font-medium mb-2 block">Manage Schools</label>
+          <div className="flex gap-2 mb-2">
+            <Input
+              placeholder="Add school name"
+              value={newSchool}
+              onChange={(e) => setNewSchool(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAddSchool()}
+            />
+            <Button onClick={handleAddSchool} type="button" size="icon">
+              <Plus className="w-4 h-4" />
+            </Button>
+          </div>
+          {schools.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-2">
+              {schools.map((school) => (
+                <div key={school} className="flex items-center gap-1 bg-secondary px-2 py-1 rounded">
+                  <span className="text-sm">{school}</span>
+                  <button
+                    onClick={() => onRemoveSchool(school)}
+                    className="text-destructive hover:text-destructive/80"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="mb-4">
+          <label className="text-sm font-medium mb-2 block">Select School</label>
+          <Select 
+            value={schoolName} 
+            onValueChange={onSchoolNameChange}
+            disabled={schools.length === 0}
+          >
+            <SelectTrigger className="bg-background">
+              <SelectValue placeholder={schools.length === 0 ? "Add schools first" : "Select School"} />
+            </SelectTrigger>
+            <SelectContent className="bg-background z-50">
+              {schools.map((school) => (
+                <SelectItem key={school} value={school}>
+                  {school}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
       
       {/* School Logo Upload */}
       <div className="mb-6 pb-6 border-b">
