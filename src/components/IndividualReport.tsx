@@ -23,35 +23,35 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
   ];
 
   return (
-    <div className="print-page bg-white text-black p-12 h-[297mm] w-[210mm] flex flex-col">
-      {/* Header */}
-      <div className="text-center mb-4 border-b-2 border-gray-800 pb-2">
+    <div className="print-page bg-white text-black p-8 h-[297mm] w-[210mm] flex flex-col">
+      {/* Header with Logo */}
+      <div className="relative mb-3 border-b-2 border-gray-800 pb-2">
         {learner.schoolLogo && (
-          <div className="flex justify-center mb-2">
-            <img 
-              src={learner.schoolLogo} 
-              alt="School Logo" 
-              className="h-16 w-auto object-contain"
-            />
-          </div>
+          <img 
+            src={learner.schoolLogo} 
+            alt="School Logo" 
+            className="h-10 w-auto object-contain absolute top-0 left-0"
+          />
         )}
-        <h1 className="text-2xl font-bold mb-1">Student Performance Report</h1>
-        <div className="grid grid-cols-3 gap-2 text-xs text-gray-600 mt-2">
-          <div><span className="font-semibold">Term:</span> {learner.term || "Not Set"}</div>
-          <div><span className="font-semibold">Year:</span> {learner.year || "Not Set"}</div>
-          <div><span className="font-semibold">No. on Roll:</span> {learner.numberOnRoll || "Not Set"}</div>
+        <div className="text-center">
+          <h1 className="text-xl font-bold mb-1">Student Performance Report</h1>
+          <div className="grid grid-cols-3 gap-2 text-xs text-gray-600">
+            <div><span className="font-semibold">Term:</span> {learner.term || "Not Set"}</div>
+            <div><span className="font-semibold">Year:</span> {learner.year || "Not Set"}</div>
+            <div><span className="font-semibold">No. on Roll:</span> {learner.numberOnRoll || "Not Set"}</div>
+          </div>
+          {(learner.vacationDate || learner.reopeningDate) && (
+            <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 mt-1">
+              <div><span className="font-semibold">Vacation:</span> {learner.vacationDate ? format(learner.vacationDate, "PPP") : "Not Set"}</div>
+              <div><span className="font-semibold">Reopening:</span> {learner.reopeningDate ? format(learner.reopeningDate, "PPP") : "Not Set"}</div>
+            </div>
+          )}
         </div>
-        {(learner.vacationDate || learner.reopeningDate) && (
-          <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 mt-1">
-            <div><span className="font-semibold">Vacation:</span> {learner.vacationDate ? format(learner.vacationDate, "PPP") : "Not Set"}</div>
-            <div><span className="font-semibold">Reopening:</span> {learner.reopeningDate ? format(learner.reopeningDate, "PPP") : "Not Set"}</div>
-          </div>
-        )}
       </div>
 
       {/* Student Information */}
-      <div className="mb-5">
-        <Card className="p-4 bg-gray-50 border-2 border-gray-300">
+      <div className="mb-3">
+        <Card className="p-3 bg-gray-50 border-2 border-gray-300">
           <div className="grid grid-cols-2 gap-3">
             <div>
               <p className="text-xs font-semibold text-gray-600">Student Name</p>
@@ -74,8 +74,8 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
       </div>
 
       {/* Subject Scores */}
-      <div className="mb-4 flex-1">
-        <h2 className="text-base font-bold mb-2 border-b border-gray-400 pb-1">Subject Performance</h2>
+      <div className="mb-3 flex-1">
+        <h2 className="text-sm font-bold mb-1.5 border-b border-gray-400 pb-1">Subject Performance</h2>
         <div className="space-y-1">
           {subjects.map((subject, index) => (
             <div 
@@ -96,10 +96,10 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
       </div>
 
       {/* Performance Summary */}
-      <div className="mb-4">
-        <Card className="p-4 bg-gray-50 border-2 border-gray-300">
-          <h3 className="text-sm font-bold mb-3">Performance Summary</h3>
-          <div className="space-y-1.5 text-sm">
+      <div className="mb-3">
+        <Card className="p-3 bg-gray-50 border-2 border-gray-300">
+          <h3 className="text-xs font-bold mb-2">Performance Summary</h3>
+          <div className="space-y-1 text-xs">
             <div className="flex justify-between">
               <span>Student Average:</span>
               <span className="font-bold">{learner.averageScore.toFixed(2)}%</span>
@@ -122,8 +122,8 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
       </div>
 
       {/* Conduct and Interest */}
-      <div className="mb-4">
-        <Card className="p-4 bg-gray-50 border-2 border-gray-300">
+      <div className="mb-3">
+        <Card className="p-3 bg-gray-50 border-2 border-gray-300">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-xs font-semibold text-gray-600 mb-1">Conduct</p>
@@ -139,28 +139,28 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
 
       {/* Class Teacher Remark */}
       {learner.teacherRemark && (
-        <div className="mb-4">
-          <Card className="p-4 bg-blue-50 border-2 border-blue-300">
-            <h3 className="text-sm font-bold mb-2">Class Teacher&apos;s Remark</h3>
-            <p className="text-sm italic text-gray-700">{learner.teacherRemark}</p>
+        <div className="mb-3">
+          <Card className="p-3 bg-blue-50 border-2 border-blue-300">
+            <h3 className="text-xs font-bold mb-1.5">Class Teacher&apos;s Remark</h3>
+            <p className="text-xs italic text-gray-700">{learner.teacherRemark}</p>
           </Card>
         </div>
       )}
 
       {/* Footer */}
-      <div className="pt-5 border-t-2 border-gray-300 mt-auto">
+      <div className="pt-3 border-t-2 border-gray-300 mt-auto">
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <p className="mb-2 text-sm">Class Teacher&apos;s Signature:</p>
-            <div className="border-b-2 border-gray-400 w-32"></div>
+            <p className="mb-1.5 text-xs">Class Teacher&apos;s Signature:</p>
+            <div className="border-b-2 border-gray-400 w-28"></div>
           </div>
           <div>
-            <p className="mb-2 text-sm">Headteacher&apos;s Signature:</p>
-            <div className="border-b-2 border-gray-400 w-32"></div>
+            <p className="mb-1.5 text-xs">Headteacher&apos;s Signature:</p>
+            <div className="border-b-2 border-gray-400 w-28"></div>
           </div>
           <div>
-            <p className="mb-2 text-sm">Date:</p>
-            <div className="border-b-2 border-gray-400 w-32"></div>
+            <p className="mb-1.5 text-xs">Date:</p>
+            <div className="border-b-2 border-gray-400 w-28"></div>
           </div>
         </div>
       </div>
