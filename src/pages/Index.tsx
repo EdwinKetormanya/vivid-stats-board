@@ -531,51 +531,61 @@ const handleSchoolLogoChange = async (logoBase64: string) => {
       {/* Header */}
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
-                <BarChart3 className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                  {school?.name || "School Report System"}
-                </h1>
-                <p className="text-muted-foreground text-sm">
-                  {profile?.full_name || profile?.email}
-                </p>
-              </div>
+          <div className="flex flex-col gap-4">
+            {/* System Title */}
+            <div className="text-center">
+              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent tracking-wide">
+                BASIC SCHOOLS LEARNING OUTCOME SYSTEM
+              </h1>
             </div>
-            <div className="flex items-center gap-4">
-              <img 
-                src={kpsBrandLogo} 
-                alt="KPS Logo" 
-                className="h-16 w-16 object-contain"
-              />
-              <div className="flex items-center gap-2">
-                {hasRole("school_admin") && (
-                  <Button asChild variant="outline" size="sm">
-                    <Link to="/school-admin">
-                      <Users className="w-4 h-4 mr-2" />
-                      School Admin
-                    </Link>
+            
+            {/* School Info and Actions */}
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
+                  <BarChart3 className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-foreground">
+                    {school?.name || "School Report System"}
+                  </h2>
+                  <p className="text-muted-foreground text-sm">
+                    {profile?.full_name || profile?.email}
+                  </p>
+                </div>
+              </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <img 
+                  src={kpsBrandLogo} 
+                  alt="KPS Logo" 
+                  className="h-16 w-16 object-contain"
+                />
+                <div className="flex items-center gap-2">
+                  {hasRole("school_admin") && (
+                    <Button asChild variant="outline" size="sm">
+                      <Link to="/school-admin">
+                        <Users className="w-4 h-4 mr-2" />
+                        School Admin
+                      </Link>
+                    </Button>
+                  )}
+                  {hasRole("super_admin") && (
+                    <Button asChild variant="outline" size="sm">
+                      <Link to="/super-admin">
+                        <Shield className="w-4 h-4 mr-2" />
+                        Super Admin
+                      </Link>
+                    </Button>
+                  )}
+                  <Button onClick={signOut} variant="outline" size="sm">
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
                   </Button>
-                )}
-                {hasRole("super_admin") && (
-                  <Button asChild variant="outline" size="sm">
-                    <Link to="/super-admin">
-                      <Shield className="w-4 h-4 mr-2" />
-                      Super Admin
-                    </Link>
-                  </Button>
-                )}
-                <Button onClick={signOut} variant="outline" size="sm">
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Logout
-                </Button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
       </header>
 
       <main className="container mx-auto px-4 py-8 pb-24">
