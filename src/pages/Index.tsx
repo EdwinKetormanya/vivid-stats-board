@@ -16,6 +16,11 @@ const Index = () => {
   const [learners, setLearners] = useState<LearnerScore[]>([]);
   const [loading, setLoading] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
+  const [term, setTerm] = useState<string>("Term 1");
+  const [year, setYear] = useState<string>(new Date().getFullYear().toString());
+  const [numberOnRoll, setNumberOnRoll] = useState<string>("30");
+  const [vacationDate, setVacationDate] = useState<Date | undefined>();
+  const [reopeningDate, setReopeningDate] = useState<Date | undefined>();
 
   const handlePrint = () => {
     window.print();
@@ -24,7 +29,15 @@ const Index = () => {
   const handleTeacherRemarkChange = (learnerName: string, remark: string) => {
     setLearners((prevLearners) =>
       prevLearners.map((learner) =>
-        learner.name === learnerName ? { ...learner, teacherRemark: remark } : learner
+        learner.name === learnerName ? { 
+          ...learner, 
+          teacherRemark: remark,
+          term,
+          year,
+          numberOnRoll,
+          vacationDate,
+          reopeningDate
+        } : learner
       )
     );
   };
@@ -32,7 +45,15 @@ const Index = () => {
   const handleConductChange = (learnerName: string, conduct: string) => {
     setLearners((prevLearners) =>
       prevLearners.map((learner) =>
-        learner.name === learnerName ? { ...learner, conduct } : learner
+        learner.name === learnerName ? { 
+          ...learner, 
+          conduct,
+          term,
+          year,
+          numberOnRoll,
+          vacationDate,
+          reopeningDate
+        } : learner
       )
     );
   };
@@ -40,7 +61,15 @@ const Index = () => {
   const handleInterestChange = (learnerName: string, interest: string) => {
     setLearners((prevLearners) =>
       prevLearners.map((learner) =>
-        learner.name === learnerName ? { ...learner, interest } : learner
+        learner.name === learnerName ? { 
+          ...learner, 
+          interest,
+          term,
+          year,
+          numberOnRoll,
+          vacationDate,
+          reopeningDate
+        } : learner
       )
     );
   };
@@ -224,6 +253,16 @@ const Index = () => {
                 onRemarkChange={handleTeacherRemarkChange}
                 onConductChange={handleConductChange}
                 onInterestChange={handleInterestChange}
+                term={term}
+                year={year}
+                numberOnRoll={numberOnRoll}
+                vacationDate={vacationDate}
+                reopeningDate={reopeningDate}
+                onTermChange={setTerm}
+                onYearChange={setYear}
+                onNumberOnRollChange={setNumberOnRoll}
+                onVacationDateChange={setVacationDate}
+                onReopeningDateChange={setReopeningDate}
               />
             </div>
 

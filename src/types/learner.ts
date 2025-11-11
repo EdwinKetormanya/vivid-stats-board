@@ -17,6 +17,11 @@ export interface LearnerScore {
   teacherRemark?: string;
   conduct?: string;
   interest?: string;
+  term?: string;
+  year?: string;
+  numberOnRoll?: string;
+  vacationDate?: Date;
+  reopeningDate?: Date;
   remarks?: {
     englishLanguage?: string;
     mathematics?: string;

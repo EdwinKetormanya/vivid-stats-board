@@ -1,6 +1,7 @@
 import { LearnerScore } from "@/types/learner";
 import { Card } from "@/components/ui/card";
 import { getGrade } from "@/utils/remarkGenerator";
+import { format } from "date-fns";
 
 interface IndividualReportProps {
   learner: LearnerScore;
@@ -24,9 +25,19 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
   return (
     <div className="print-page bg-white text-black p-12 h-[297mm] w-[210mm] flex flex-col">
       {/* Header */}
-      <div className="text-center mb-6 border-b-2 border-gray-800 pb-3">
+      <div className="text-center mb-4 border-b-2 border-gray-800 pb-2">
         <h1 className="text-2xl font-bold mb-1">Student Performance Report</h1>
-        <p className="text-xs text-gray-600">Academic Year 2024/2025</p>
+        <div className="grid grid-cols-3 gap-2 text-xs text-gray-600 mt-2">
+          <div><span className="font-semibold">Term:</span> {learner.term || "Not Set"}</div>
+          <div><span className="font-semibold">Year:</span> {learner.year || "Not Set"}</div>
+          <div><span className="font-semibold">No. on Roll:</span> {learner.numberOnRoll || "Not Set"}</div>
+        </div>
+        {(learner.vacationDate || learner.reopeningDate) && (
+          <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 mt-1">
+            <div><span className="font-semibold">Vacation:</span> {learner.vacationDate ? format(learner.vacationDate, "PPP") : "Not Set"}</div>
+            <div><span className="font-semibold">Reopening:</span> {learner.reopeningDate ? format(learner.reopeningDate, "PPP") : "Not Set"}</div>
+          </div>
+        )}
       </div>
 
       {/* Student Information */}
