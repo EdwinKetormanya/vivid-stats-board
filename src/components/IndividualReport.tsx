@@ -23,7 +23,7 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
   ];
 
   return (
-    <div className="print-page bg-white text-black p-8 h-[297mm] w-[210mm] flex flex-col">
+    <div className="print-page bg-white text-black p-8 h-[297mm] w-[210mm] flex flex-col border-4 border-gray-800">
       {/* Header with Logo */}
       <div className="relative mb-3 border-b-2 border-gray-800 pb-2">
         {learner.schoolLogo && (
@@ -175,18 +175,18 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
 
       {/* Footer */}
       <div className="pt-3 border-t-2 border-gray-300 mt-auto">
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-8">
           <div>
-            <p className="mb-1.5 text-xs">Class Teacher&apos;s Signature:</p>
-            <div className="border-b-2 border-gray-400 w-28"></div>
+            <p className="mb-3 text-xs">Class Teacher&apos;s Signature:</p>
+            <div className="border-b-2 border-gray-400 w-40"></div>
           </div>
           <div>
-            <p className="mb-1.5 text-xs">Headteacher&apos;s Signature:</p>
-            <div className="border-b-2 border-gray-400 w-28"></div>
+            <p className="mb-3 text-xs">Headteacher&apos;s Signature:</p>
+            <div className="border-b-2 border-gray-400 w-40"></div>
           </div>
           <div>
-            <p className="mb-1.5 text-xs">Date:</p>
-            <div className="border-b-2 border-gray-400 w-28"></div>
+            <p className="mb-3 text-xs">Date:</p>
+            <div className="border-b-2 border-gray-400 w-40"></div>
           </div>
         </div>
       </div>
