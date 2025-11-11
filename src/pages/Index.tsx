@@ -307,6 +307,126 @@ const Index = () => {
     updateStudent(learnerName, { status });
   };
 
+  const updateClassSettings = async (updates: Partial<Class>) => {
+    if (!selectedClassId) return;
+
+    try {
+      const { error } = await supabase
+        .from("classes")
+        .update(updates)
+        .eq("id", selectedClassId);
+
+      if (error) throw error;
+
+      // Update local state
+      setClasses((prev) =>
+        prev.map((c) => (c.id === selectedClassId ? { ...c, ...updates } : c))
+      );
+    } catch (error) {
+      console.error("Error updating class:", error);
+      toast.error("Failed to update class settings");
+    }
+  };
+
+  const handleTermChange = (term: string) => {
+    updateClassSettings({ term });
+  };
+
+  const handleYearChange = (year: string) => {
+    updateClassSettings({ year });
+  };
+
+  const handleNumberOnRollChange = (numberOnRoll: string) => {
+    updateClassSettings({ number_on_roll: parseInt(numberOnRoll) || null });
+  };
+
+  const handleVacationDateChange = (date: Date | undefined) => {
+    updateClassSettings({ vacation_date: date ? date.toISOString().split('T')[0] : null });
+  };
+
+  const handleReopeningDateChange = (date: Date | undefined) => {
+    updateClassSettings({ reopening_date: date ? date.toISOString().split('T')[0] : null });
+  };
+
+  const handleSchoolLogoChange = async (logoBase64: string) => {
+    if (!profile?.school_id) return;
+
+    try {
+      const { error } = await supabase
+        .from("schools")
+        .update({ logo_url: logoBase64 })
+        .eq("id", profile.school_id);
+
+      if (error) throw error;
+
+      setSchool((prev) => prev ? { ...prev, logo_url: logoBase64 } : null);
+      toast.success("School logo updated successfully");
+    } catch (error) {
+      console.error("Error updating logo:", error);
+      toast.error("Failed to update school logo");
+    }
+  };
+
+  const handleRegionChange = async (region: string) => {
+    if (!profile?.school_id) return;
+
+    try {
+      const { error } = await supabase
+        .from("schools")
+        .update({ region })
+        .eq("id", profile.school_id);
+
+      if (error) throw error;
+
+      setSchool((prev) => prev ? { ...prev, region } : null);
+    } catch (error) {
+      console.error("Error updating region:", error);
+      toast.error("Failed to update region");
+    }
+  };
+
+  const handleDistrictChange = async (district: string) => {
+    if (!profile?.school_id) return;
+
+    try {
+      const { error } = await supabase
+        .from("schools")
+        .update({ district })
+        .eq("id", profile.school_id);
+
+      if (error) throw error;
+
+      setSchool((prev) => prev ? { ...prev, district } : null);
+    } catch (error) {
+      console.error("Error updating district:", error);
+      toast.error("Failed to update district");
+    }
+  };
+
+  const handleSchoolNameChange = async (name: string) => {
+    if (!profile?.school_id) return;
+
+    try {
+      const { error } = await supabase
+        .from("schools")
+        .update({ name })
+        .eq("id", profile.school_id);
+
+      if (error) throw error;
+
+      setSchool((prev) => prev ? { ...prev, name } : null);
+    } catch (error) {
+      console.error("Error updating school name:", error);
+      toast.error("Failed to update school name");
+    }
+  };
+
+  const handleAttendanceOutOfChange = (attendanceOutOf: number) => {
+    setStudents((prev) =>
+      prev.map((s) => ({ ...s, attendanceOutOf }))
+    );
+  };
+
   const handlePrint = () => {
     window.print();
   };
@@ -602,17 +722,17 @@ const Index = () => {
                   region={school?.region || ""}
                   district={school?.district || ""}
                   schoolName={school?.name || ""}
-                  onTermChange={() => {}}
-                  onYearChange={() => {}}
-                  onNumberOnRollChange={() => {}}
-                  onVacationDateChange={() => {}}
-                  onReopeningDateChange={() => {}}
-                  onSchoolLogoChange={() => {}}
-                  onRegionChange={() => {}}
-                  onDistrictChange={() => {}}
-                  onSchoolNameChange={() => {}}
-                  attendanceOutOf={180}
-                  onAttendanceOutOfChange={() => {}}
+                  onTermChange={handleTermChange}
+                  onYearChange={handleYearChange}
+                  onNumberOnRollChange={handleNumberOnRollChange}
+                  onVacationDateChange={handleVacationDateChange}
+                  onReopeningDateChange={handleReopeningDateChange}
+                  onSchoolLogoChange={handleSchoolLogoChange}
+                  onRegionChange={handleRegionChange}
+                  onDistrictChange={handleDistrictChange}
+                  onSchoolNameChange={handleSchoolNameChange}
+                  attendanceOutOf={students[0]?.attendanceOutOf || 180}
+                  onAttendanceOutOfChange={handleAttendanceOutOfChange}
                 />
 
                 {/* Insights */}
