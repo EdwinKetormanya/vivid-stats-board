@@ -20,11 +20,14 @@
   
   .print-page {
     page-break-after: always;
-    width: 210mm;
-    min-height: 297mm;
-    padding: 20mm;
-    margin: 0;
+    width: 210mm !important;
+    height: 297mm !important;
+    max-height: 297mm !important;
+    padding: 12mm !important;
+    margin: 0 !important;
     background: white !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
   }
   
   .page-break:last-child .print-page {

@@ -21,58 +21,58 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
   ];
 
   return (
-    <div className="print-page bg-white text-black p-8 min-h-[297mm]">
+    <div className="print-page bg-white text-black p-12 h-[297mm] w-[210mm] flex flex-col">
       {/* Header */}
-      <div className="text-center mb-8 border-b-2 border-gray-800 pb-4">
-        <h1 className="text-3xl font-bold mb-2">Student Performance Report</h1>
-        <p className="text-sm text-gray-600">Academic Year 2024/2025</p>
+      <div className="text-center mb-6 border-b-2 border-gray-800 pb-3">
+        <h1 className="text-2xl font-bold mb-1">Student Performance Report</h1>
+        <p className="text-xs text-gray-600">Academic Year 2024/2025</p>
       </div>
 
       {/* Student Information */}
-      <div className="mb-8">
-        <Card className="p-6 bg-gray-50 border-2 border-gray-300">
-          <div className="grid grid-cols-2 gap-4">
+      <div className="mb-5">
+        <Card className="p-4 bg-gray-50 border-2 border-gray-300">
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <p className="text-sm font-semibold text-gray-600">Student Name</p>
-              <p className="text-xl font-bold">{learner.name}</p>
+              <p className="text-xs font-semibold text-gray-600">Student Name</p>
+              <p className="text-lg font-bold">{learner.name}</p>
             </div>
             <div>
-              <p className="text-sm font-semibold text-gray-600">Position</p>
-              <p className="text-xl font-bold">{learner.position}</p>
+              <p className="text-xs font-semibold text-gray-600">Position</p>
+              <p className="text-lg font-bold">{learner.position}</p>
             </div>
             <div>
-              <p className="text-sm font-semibold text-gray-600">Total Score</p>
-              <p className="text-xl font-bold">{learner.totalRawScore}</p>
+              <p className="text-xs font-semibold text-gray-600">Total Score</p>
+              <p className="text-lg font-bold">{learner.totalRawScore}</p>
             </div>
             <div>
-              <p className="text-sm font-semibold text-gray-600">Average Score</p>
-              <p className="text-xl font-bold">{learner.averageScore.toFixed(2)}%</p>
+              <p className="text-xs font-semibold text-gray-600">Average Score</p>
+              <p className="text-lg font-bold">{learner.averageScore.toFixed(2)}%</p>
             </div>
           </div>
         </Card>
       </div>
 
       {/* Subject Scores */}
-      <div className="mb-8">
-        <h2 className="text-xl font-bold mb-4 border-b border-gray-400 pb-2">Subject Performance</h2>
-        <div className="space-y-2">
+      <div className="mb-5 flex-1">
+        <h2 className="text-base font-bold mb-3 border-b border-gray-400 pb-1">Subject Performance</h2>
+        <div className="space-y-1.5">
           {subjects.map((subject, index) => (
             <div 
               key={index} 
-              className="flex justify-between items-center p-3 bg-gray-50 border border-gray-300 rounded"
+              className="flex justify-between items-center p-2 bg-gray-50 border border-gray-300 rounded"
             >
-              <span className="font-medium">{subject.label}</span>
-              <span className="font-bold text-lg">{subject.value || 0}</span>
+              <span className="font-medium text-sm">{subject.label}</span>
+              <span className="font-bold text-base">{subject.value || 0}</span>
             </div>
           ))}
         </div>
       </div>
 
       {/* Performance Summary */}
-      <div className="mt-8">
-        <Card className="p-6 bg-gray-50 border-2 border-gray-300">
-          <h3 className="text-lg font-bold mb-4">Performance Summary</h3>
-          <div className="space-y-2">
+      <div className="mb-5">
+        <Card className="p-4 bg-gray-50 border-2 border-gray-300">
+          <h3 className="text-sm font-bold mb-3">Performance Summary</h3>
+          <div className="space-y-1.5 text-sm">
             <div className="flex justify-between">
               <span>Student Average:</span>
               <span className="font-bold">{learner.averageScore.toFixed(2)}%</span>
@@ -95,15 +95,15 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
       </div>
 
       {/* Footer */}
-      <div className="mt-12 pt-8 border-t-2 border-gray-300">
-        <div className="grid grid-cols-2 gap-8">
+      <div className="pt-5 border-t-2 border-gray-300 mt-auto">
+        <div className="grid grid-cols-2 gap-6">
           <div>
-            <p className="mb-2">Teacher&apos;s Signature:</p>
-            <div className="border-b-2 border-gray-400 w-48"></div>
+            <p className="mb-2 text-sm">Teacher&apos;s Signature:</p>
+            <div className="border-b-2 border-gray-400 w-40"></div>
           </div>
           <div>
-            <p className="mb-2">Date:</p>
-            <div className="border-b-2 border-gray-400 w-48"></div>
+            <p className="mb-2 text-sm">Date:</p>
+            <div className="border-b-2 border-gray-400 w-40"></div>
           </div>
         </div>
       </div>
