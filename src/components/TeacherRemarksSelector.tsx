@@ -47,6 +47,7 @@ interface TeacherRemarksSelectorProps {
   onAttendanceOutOfChange: (attendanceOutOf: number) => void;
   attendanceOutOf: number;
   onStatusChange: (learnerName: string, status: string) => void;
+  onExportIndividualPDF?: (learner: LearnerScore) => void;
 }
 
 const TEACHER_REMARKS = [
@@ -115,7 +116,8 @@ export const TeacherRemarksSelector = ({
   onAttendanceChange,
   onAttendanceOutOfChange,
   attendanceOutOf,
-  onStatusChange
+  onStatusChange,
+  onExportIndividualPDF
 }: TeacherRemarksSelectorProps) => {
   const [availableSchools, setAvailableSchools] = useState<Array<{ id: string; name: string }>>([]);
   const currentYear = new Date().getFullYear();

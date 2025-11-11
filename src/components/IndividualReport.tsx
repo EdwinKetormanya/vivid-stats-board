@@ -25,19 +25,24 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
   return (
     <div className="print-page bg-white text-black p-6 min-h-[297mm] max-w-[210mm] mx-auto flex flex-col border-4 border-gray-800">
       {/* Header with Logo */}
-      <div className="relative mb-3 border-b-2 border-gray-800 pb-2">
-        <div className="flex items-start gap-3">
+      <div className="relative mb-2 border-b-2 border-gray-800 pb-2">
+        <div className="grid grid-cols-[auto_1fr] gap-3 items-start">
           {learner.schoolLogo && (
             <div className="flex-shrink-0">
               <img 
                 src={learner.schoolLogo} 
                 alt="School Logo" 
-                className="h-14 w-14 object-contain print:block"
-                style={{ printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}
+                className="h-16 w-16 object-contain"
+                style={{ 
+                  printColorAdjust: 'exact', 
+                  WebkitPrintColorAdjust: 'exact',
+                  display: 'block !important',
+                  visibility: 'visible !important'
+                }}
               />
             </div>
           )}
-          <div className="flex-1 text-center">
+          <div className="text-center">
             <h1 className="text-lg font-bold mb-1">Student Performance Report</h1>
             {(learner.schoolName || learner.district || learner.region) && (
               <div className="text-xs text-gray-600 mb-1">
@@ -156,8 +161,10 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
             <div className="bg-white rounded-lg p-2 border border-indigo-100 shadow-sm">
               <p className="text-xs font-semibold text-indigo-600 mb-1 uppercase tracking-wide">Attendance</p>
               <p className="text-sm font-bold text-gray-800">
-                {learner.attendance !== undefined && learner.attendanceOutOf !== undefined 
+                {learner.attendance !== undefined && learner.attendanceOutOf 
                   ? `${learner.attendance} / ${learner.attendanceOutOf}`
+                  : learner.attendance !== undefined 
+                  ? `${learner.attendance}`
                   : "Not Set"}
               </p>
             </div>
