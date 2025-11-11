@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Users, BookOpen, GraduationCap, ArrowLeft, UserPlus, Trash2, Upload, Download, CheckCircle2, AlertCircle, XCircle, Search, X } from "lucide-react";
+import { Loader2, Users, BookOpen, GraduationCap, ArrowLeft, UserPlus, Trash2, Upload, Download, CheckCircle2, AlertCircle, XCircle, Search, X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
 import {
@@ -112,6 +112,10 @@ const SchoolAdmin = () => {
   }>>([]);
   const [bulkImportFilter, setBulkImportFilter] = useState<"all" | "valid" | "errors">("all");
   const [bulkImportSearch, setBulkImportSearch] = useState("");
+  const [bulkImportSort, setBulkImportSort] = useState<{
+    column: "email" | "name" | "status" | null;
+    direction: "asc" | "desc";
+  }>({ column: null, direction: "asc" });
 
   useEffect(() => {
     if (!profileLoading && !hasRole("school_admin") && !hasRole("super_admin")) {
@@ -996,9 +1000,54 @@ const SchoolAdmin = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-16">Status</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Name</TableHead>
+                  <TableHead 
+                    className="w-16 cursor-pointer select-none hover:bg-muted/50"
+                    onClick={() => {
+                      setBulkImportSort(prev => ({
+                        column: "status",
+                        direction: prev.column === "status" && prev.direction === "asc" ? "desc" : "asc"
+                      }));
+                    }}
+                  >
+                    <div className="flex items-center gap-1">
+                      Status
+                      {bulkImportSort.column === "status" ? (
+                        bulkImportSort.direction === "asc" ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                      ) : <ArrowUpDown className="w-3 h-3 opacity-50" />}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer select-none hover:bg-muted/50"
+                    onClick={() => {
+                      setBulkImportSort(prev => ({
+                        column: "email",
+                        direction: prev.column === "email" && prev.direction === "asc" ? "desc" : "asc"
+                      }));
+                    }}
+                  >
+                    <div className="flex items-center gap-1">
+                      Email
+                      {bulkImportSort.column === "email" ? (
+                        bulkImportSort.direction === "asc" ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                      ) : <ArrowUpDown className="w-3 h-3 opacity-50" />}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer select-none hover:bg-muted/50"
+                    onClick={() => {
+                      setBulkImportSort(prev => ({
+                        column: "name",
+                        direction: prev.column === "name" && prev.direction === "asc" ? "desc" : "asc"
+                      }));
+                    }}
+                  >
+                    <div className="flex items-center gap-1">
+                      Name
+                      {bulkImportSort.column === "name" ? (
+                        bulkImportSort.direction === "asc" ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                      ) : <ArrowUpDown className="w-3 h-3 opacity-50" />}
+                    </div>
+                  </TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead className="w-16 text-right">Remove</TableHead>
                 </TableRow>
@@ -1026,6 +1075,24 @@ const SchoolAdmin = () => {
                     }
                     
                     return true;
+                  })
+                  .sort((a, b) => {
+                    if (!bulkImportSort.column) return 0;
+                    
+                    let comparison = 0;
+                    
+                    if (bulkImportSort.column === "email") {
+                      comparison = a.email.localeCompare(b.email);
+                    } else if (bulkImportSort.column === "name") {
+                      const aName = a.existingName || a.fullName || "";
+                      const bName = b.existingName || b.fullName || "";
+                      comparison = aName.localeCompare(bName);
+                    } else if (bulkImportSort.column === "status") {
+                      const statusOrder = { valid: 0, already_added: 1, not_found: 2 };
+                      comparison = statusOrder[a.validationStatus] - statusOrder[b.validationStatus];
+                    }
+                    
+                    return bulkImportSort.direction === "asc" ? comparison : -comparison;
                   })
                   .map((teacher, index) => (
                   <TableRow key={index} className={
