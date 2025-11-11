@@ -137,27 +137,28 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
 
       {/* Conduct, Interest, Attendance, and Status */}
       <div className="mb-3">
-        <Card className="p-3 bg-gray-50 border-2 border-gray-300">
-          <div className="grid grid-cols-4 gap-4">
-            <div>
-              <p className="text-xs font-semibold text-gray-600 mb-1">Conduct</p>
-              <p className="text-sm font-bold">{learner.conduct || "Not Set"}</p>
+        <Card className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-indigo-200">
+          <h3 className="text-sm font-bold mb-3 text-indigo-900 border-b border-indigo-200 pb-1.5">Student Assessment</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-white rounded-lg p-3 border border-indigo-100 shadow-sm">
+              <p className="text-xs font-semibold text-indigo-600 mb-1.5 uppercase tracking-wide">Conduct</p>
+              <p className="text-base font-bold text-gray-800">{learner.conduct || "Not Set"}</p>
             </div>
-            <div>
-              <p className="text-xs font-semibold text-gray-600 mb-1">Interest</p>
-              <p className="text-sm font-bold">{learner.interest || "Not Set"}</p>
+            <div className="bg-white rounded-lg p-3 border border-indigo-100 shadow-sm">
+              <p className="text-xs font-semibold text-indigo-600 mb-1.5 uppercase tracking-wide">Interest</p>
+              <p className="text-base font-bold text-gray-800">{learner.interest || "Not Set"}</p>
             </div>
-            <div>
-              <p className="text-xs font-semibold text-gray-600 mb-1">Attendance</p>
-              <p className="text-sm font-bold">
+            <div className="bg-white rounded-lg p-3 border border-indigo-100 shadow-sm">
+              <p className="text-xs font-semibold text-indigo-600 mb-1.5 uppercase tracking-wide">Attendance</p>
+              <p className="text-base font-bold text-gray-800">
                 {learner.attendance !== undefined && learner.attendanceOutOf !== undefined 
                   ? `${learner.attendance} / ${learner.attendanceOutOf}`
                   : "Not Set"}
               </p>
             </div>
-            <div>
-              <p className="text-xs font-semibold text-gray-600 mb-1">Status</p>
-              <p className="text-sm font-bold">{learner.status || "Not Set"}</p>
+            <div className="bg-white rounded-lg p-3 border border-indigo-100 shadow-sm">
+              <p className="text-xs font-semibold text-indigo-600 mb-1.5 uppercase tracking-wide">Status</p>
+              <p className="text-base font-bold text-gray-800">{learner.status || "Not Set"}</p>
             </div>
           </div>
         </Card>
@@ -166,9 +167,9 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
       {/* Class Teacher Remark */}
       {learner.teacherRemark && (
         <div className="mb-3">
-          <Card className="p-3 bg-blue-50 border-2 border-blue-300">
-            <h3 className="text-xs font-bold mb-1.5">Class Teacher&apos;s Remark</h3>
-            <p className="text-xs italic text-gray-700">{learner.teacherRemark}</p>
+          <Card className="p-4 bg-gradient-to-br from-amber-50 to-yellow-50 border-2 border-amber-200">
+            <h3 className="text-sm font-bold mb-2 text-amber-900 border-b border-amber-200 pb-1.5">Class Teacher&apos;s Remark</h3>
+            <p className="text-xs leading-relaxed text-gray-800 bg-white rounded-lg p-3 border border-amber-100">{learner.teacherRemark}</p>
           </Card>
         </div>
       )}
