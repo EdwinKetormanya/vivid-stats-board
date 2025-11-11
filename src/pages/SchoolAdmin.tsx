@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
@@ -23,7 +23,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Users, BookOpen, GraduationCap, ArrowLeft, UserPlus, Trash2 } from "lucide-react";
+import { Loader2, Users, BookOpen, GraduationCap, ArrowLeft, UserPlus, Trash2, Upload } from "lucide-react";
+import * as XLSX from "xlsx";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -86,6 +87,8 @@ const SchoolAdmin = () => {
   const [newTeacherRole, setNewTeacherRole] = useState<"teacher" | "school_admin">("teacher");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [teacherToDelete, setTeacherToDelete] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!profileLoading && !hasRole("school_admin") && !hasRole("super_admin")) {
@@ -243,6 +246,153 @@ const SchoolAdmin = () => {
     }
   };
 
+  const handleBulkUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !profile?.school_id) return;
+
+    setIsUploading(true);
+
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data);
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet) as Array<{
+        email?: string;
+        Email?: string;
+        full_name?: string;
+        name?: string;
+        Name?: string;
+        role?: string;
+        Role?: string;
+      }>;
+
+      if (jsonData.length === 0) {
+        toast.error("The Excel file is empty");
+        setIsUploading(false);
+        return;
+      }
+
+      // Process teachers data
+      const teachersToProcess: Array<{
+        email: string;
+        fullName?: string;
+        role: "teacher" | "school_admin";
+      }> = [];
+
+      jsonData.forEach((row) => {
+        const email = (row.email || row.Email)?.toString().trim().toLowerCase();
+        const fullName = (row.full_name || row.name || row.Name)?.toString().trim();
+        const roleStr = (row.role || row.Role)?.toString().toLowerCase();
+        
+        let role: "teacher" | "school_admin" = "teacher";
+        if (roleStr === "school_admin" || roleStr === "admin") {
+          role = "school_admin";
+        }
+
+        if (email) {
+          teachersToProcess.push({ email, fullName, role });
+        }
+      });
+
+      if (teachersToProcess.length === 0) {
+        toast.error("No valid teachers found. Please ensure there's an 'email' column.");
+        setIsUploading(false);
+        return;
+      }
+
+      let successCount = 0;
+      let notFoundCount = 0;
+      let errorCount = 0;
+      const results: string[] = [];
+
+      // Process each teacher
+      for (const teacher of teachersToProcess) {
+        try {
+          // Find user by email
+          const { data: profileData, error: profileError } = await supabase
+            .from("profiles")
+            .select("id")
+            .eq("email", teacher.email)
+            .maybeSingle();
+
+          if (profileError) {
+            errorCount++;
+            results.push(`${teacher.email}: Error - ${profileError.message}`);
+            continue;
+          }
+
+          if (!profileData) {
+            notFoundCount++;
+            results.push(`${teacher.email}: User not found (needs to sign up first)`);
+            continue;
+          }
+
+          // Update profile with school_id
+          const { error: updateError } = await supabase
+            .from("profiles")
+            .update({ school_id: profile.school_id })
+            .eq("id", profileData.id);
+
+          if (updateError) {
+            errorCount++;
+            results.push(`${teacher.email}: Failed to assign school`);
+            continue;
+          }
+
+          // Add role (check if role already exists)
+          const { error: roleError } = await supabase
+            .from("user_roles")
+            .insert({
+              user_id: profileData.id,
+              role: teacher.role,
+              school_id: profile.school_id,
+            });
+
+          if (roleError) {
+            // If duplicate, it's not really an error
+            if (roleError.code === "23505") {
+              results.push(`${teacher.email}: Already has this role`);
+            } else {
+              errorCount++;
+              results.push(`${teacher.email}: Failed to assign role`);
+            }
+            continue;
+          }
+
+          successCount++;
+          results.push(`${teacher.email}: Successfully added as ${teacher.role}`);
+        } catch (error) {
+          errorCount++;
+          results.push(`${teacher.email}: Unexpected error`);
+        }
+      }
+
+      // Show results
+      if (successCount > 0) {
+        toast.success(`Successfully added ${successCount} teacher(s)`);
+        loadSchoolData();
+      }
+
+      if (notFoundCount > 0) {
+        toast.warning(`${notFoundCount} user(s) not found - they need to sign up first`);
+      }
+
+      if (errorCount > 0) {
+        toast.error(`${errorCount} teacher(s) failed to add`);
+      }
+
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    } catch (error) {
+      console.error("Error processing file:", error);
+      toast.error("Failed to process the Excel file");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleDeleteClick = (teacherId: string) => {
     setTeacherToDelete(teacherId);
     setDeleteDialogOpen(true);
@@ -379,8 +529,49 @@ const SchoolAdmin = () => {
             </Button>
           </div>
 
+          {/* Bulk Upload Section */}
+          <div className="mb-6 pb-6 border-b">
+            <h3 className="text-lg font-semibold mb-4">Bulk Upload Teachers</h3>
+            <div className="space-y-4">
+              <div className="p-4 bg-muted/30 rounded-lg">
+                <p className="text-sm text-muted-foreground mb-2">
+                  Upload an Excel file (.xlsx, .xls) with teacher information.
+                </p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  <strong>Required column:</strong> email or Email
+                  <br />
+                  <strong>Optional columns:</strong> name, full_name, Name (teacher's name), role, Role (teacher or school_admin)
+                </p>
+                <p className="text-xs text-muted-foreground mb-4">
+                  Example: | email | name | role |
+                  <br />
+                  Note: Teachers must sign up before they can be added to your school.
+                </p>
+              </div>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={handleBulkUpload}
+                className="hidden"
+                id="bulk-upload-teachers"
+              />
+              
+              <Button
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full"
+                disabled={isUploading}
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                {isUploading ? "Uploading..." : "Upload Excel File"}
+              </Button>
+            </div>
+          </div>
+
           {showAddTeacher && (
             <div className="mb-6 p-4 border rounded-lg bg-muted/30">
+              <h3 className="text-lg font-semibold mb-4">Add Single Teacher</h3>
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="teacher-email">Teacher Email</Label>
