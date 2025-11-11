@@ -16,7 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import kpsLogo from "@/assets/kps-brand-logo.png";
+import kpsLogo from "@/assets/kps-main-logo.png";
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -143,7 +143,7 @@ export default function Auth() {
         
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-8">
-            <img src={kpsLogo} alt="School Logo" className="h-12 w-auto brightness-0 invert" />
+            <img src={kpsLogo} alt="KPS Logo" className="h-16 w-auto" />
           </div>
           <h1 className="text-4xl font-bold text-white mb-4">
             School Report Management System
@@ -180,7 +180,7 @@ export default function Auth() {
         <Card className="w-full max-w-md p-8 shadow-lg border-border/50">
           {/* Mobile Logo */}
           <div className="lg:hidden text-center mb-6">
-            <img src={kpsLogo} alt="School Logo" className="h-12 w-auto mx-auto mb-4" />
+            <img src={kpsLogo} alt="KPS Logo" className="h-16 w-auto mx-auto mb-4" />
             <h2 className="text-2xl font-bold">Welcome Back</h2>
             <p className="text-muted-foreground text-sm mt-1">Sign in to access your dashboard</p>
           </div>
