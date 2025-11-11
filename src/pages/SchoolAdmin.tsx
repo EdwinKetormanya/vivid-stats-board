@@ -960,6 +960,7 @@ const SchoolAdmin = () => {
                 placeholder="Search by email or name..."
                 value={bulkImportSearch}
                 onChange={(e) => setBulkImportSearch(e.target.value)}
+                onKeyDown={(e) => e.key === "Escape" && setBulkImportSearch("")}
                 className="pl-9 pr-9"
               />
               {bulkImportSearch && (
