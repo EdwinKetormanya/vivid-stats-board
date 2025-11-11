@@ -7,6 +7,7 @@ import { InsightsPanel } from "@/components/InsightsPanel";
 import { PrintReports } from "@/components/PrintReports";
 import { TeacherRemarksSelector } from "@/components/TeacherRemarksSelector";
 import { Footer } from "@/components/Footer";
+import kpsLogo from "@/assets/kps-logo.png";
 import { Users, TrendingUp, Trophy, BarChart3, Printer, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { parseExcelFile, calculateSubjectPerformance, calculateDashboardStats } from "@/utils/dataParser";
@@ -192,15 +193,20 @@ const Index = () => {
       {/* Header */}
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
-              <BarChart3 className="w-6 h-6 text-white" />
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
+                <BarChart3 className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  Learner Performance Dashboard
+                </h1>
+                <p className="text-muted-foreground text-sm">Track and analyze student academic progress</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Learner Performance Dashboard
-              </h1>
-              <p className="text-muted-foreground text-sm">Track and analyze student academic progress</p>
+            <div className="flex-shrink-0">
+              <img src={kpsLogo} alt="Keep Premium Solutions" className="h-20 w-20 object-contain" />
             </div>
           </div>
         </div>
