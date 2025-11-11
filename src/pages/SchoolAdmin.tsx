@@ -206,7 +206,7 @@ const SchoolAdmin = () => {
       // Find user by email
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
-        .select("id")
+        .select("id, full_name")
         .eq("email", newTeacherEmail.trim())
         .maybeSingle();
 
@@ -235,6 +235,21 @@ const SchoolAdmin = () => {
         });
 
       if (roleError) throw roleError;
+
+      // Send welcome email
+      try {
+        await supabase.functions.invoke("send-teacher-welcome", {
+          body: {
+            teacherEmail: newTeacherEmail.trim(),
+            teacherName: profileData.full_name,
+            schoolName: school?.name || "Your School",
+            role: newTeacherRole,
+          },
+        });
+      } catch (emailError) {
+        console.error("Failed to send welcome email:", emailError);
+        // Don't fail the whole operation if email fails
+      }
 
       toast.success(`${newTeacherRole === "teacher" ? "Teacher" : "School admin"} added successfully`);
       setNewTeacherEmail("");
@@ -311,7 +326,7 @@ const SchoolAdmin = () => {
           // Find user by email
           const { data: profileData, error: profileError } = await supabase
             .from("profiles")
-            .select("id")
+            .select("id, full_name")
             .eq("email", teacher.email)
             .maybeSingle();
 
@@ -357,6 +372,21 @@ const SchoolAdmin = () => {
               results.push(`${teacher.email}: Failed to assign role`);
             }
             continue;
+          }
+
+          // Send welcome email
+          try {
+            await supabase.functions.invoke("send-teacher-welcome", {
+              body: {
+                teacherEmail: teacher.email,
+                teacherName: profileData.full_name || teacher.fullName,
+                schoolName: school?.name || "Your School",
+                role: teacher.role,
+              },
+            });
+          } catch (emailError) {
+            console.error("Failed to send welcome email to", teacher.email, emailError);
+            // Continue even if email fails
           }
 
           successCount++;
