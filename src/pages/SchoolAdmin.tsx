@@ -1,0 +1,523 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
+import { supabase } from "@/integrations/supabase/client";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, Users, BookOpen, GraduationCap, ArrowLeft, UserPlus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
+interface Profile {
+  id: string;
+  email: string;
+  full_name: string | null;
+}
+
+interface UserWithRole extends Profile {
+  role: "teacher" | "school_admin" | null;
+}
+
+interface Class {
+  id: string;
+  name: string;
+  term: string | null;
+  year: string | null;
+  teacher_id: string | null;
+  teacher?: {
+    full_name: string | null;
+    email: string;
+  };
+  student_count: number;
+}
+
+interface School {
+  id: string;
+  name: string;
+  region: string | null;
+  district: string | null;
+}
+
+const SchoolAdmin = () => {
+  const { signOut } = useAuth();
+  const { profile, loading: profileLoading, hasRole } = useProfile();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [school, setSchool] = useState<School | null>(null);
+  const [teachers, setTeachers] = useState<UserWithRole[]>([]);
+  const [classes, setClasses] = useState<Class[]>([]);
+  const [stats, setStats] = useState({
+    totalTeachers: 0,
+    totalClasses: 0,
+    totalStudents: 0,
+  });
+
+  // Add teacher state
+  const [showAddTeacher, setShowAddTeacher] = useState(false);
+  const [newTeacherEmail, setNewTeacherEmail] = useState("");
+  const [newTeacherRole, setNewTeacherRole] = useState<"teacher" | "school_admin">("teacher");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [teacherToDelete, setTeacherToDelete] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!profileLoading && !hasRole("school_admin") && !hasRole("super_admin")) {
+      navigate("/");
+      toast.error("Access denied. School admin privileges required.");
+    }
+  }, [profileLoading, hasRole, navigate]);
+
+  useEffect(() => {
+    if (profile?.school_id) {
+      loadSchoolData();
+    }
+  }, [profile]);
+
+  const loadSchoolData = async () => {
+    if (!profile?.school_id) return;
+
+    setLoading(true);
+    try {
+      // Load school info
+      const { data: schoolData, error: schoolError } = await supabase
+        .from("schools")
+        .select("*")
+        .eq("id", profile.school_id)
+        .single();
+
+      if (schoolError) throw schoolError;
+      setSchool(schoolData);
+
+      // Load teachers and their roles
+      const { data: profilesData, error: profilesError } = await supabase
+        .from("profiles")
+        .select("id, email, full_name")
+        .eq("school_id", profile.school_id);
+
+      if (profilesError) throw profilesError;
+
+      // Get roles for these users
+      const { data: rolesData, error: rolesError } = await supabase
+        .from("user_roles")
+        .select("user_id, role")
+        .eq("school_id", profile.school_id)
+        .in("role", ["teacher", "school_admin"]);
+
+      if (rolesError) throw rolesError;
+
+      // Combine profiles with roles
+      const teachersWithRoles: UserWithRole[] = (profilesData || []).map((p) => ({
+        ...p,
+        role: (rolesData?.find((r) => r.user_id === p.id)?.role as "teacher" | "school_admin") || null,
+      })).filter((t) => t.role !== null);
+
+      setTeachers(teachersWithRoles);
+
+      // Load classes with teacher info and student count
+      const { data: classesData, error: classesError } = await supabase
+        .from("classes")
+        .select(`
+          id,
+          name,
+          term,
+          year,
+          teacher_id
+        `)
+        .eq("school_id", profile.school_id)
+        .order("created_at", { ascending: false });
+
+      if (classesError) throw classesError;
+
+      // Get student counts for each class
+      const classesWithCounts = await Promise.all(
+        (classesData || []).map(async (cls) => {
+          const { count } = await supabase
+            .from("students")
+            .select("*", { count: "exact", head: true })
+            .eq("class_id", cls.id);
+
+          // Get teacher info
+          const teacher = teachersWithRoles.find((t) => t.id === cls.teacher_id);
+
+          return {
+            ...cls,
+            student_count: count || 0,
+            teacher: teacher
+              ? { full_name: teacher.full_name, email: teacher.email }
+              : undefined,
+          };
+        })
+      );
+
+      setClasses(classesWithCounts);
+
+      // Calculate stats
+      const totalStudents = classesWithCounts.reduce((sum, cls) => sum + cls.student_count, 0);
+      setStats({
+        totalTeachers: teachersWithRoles.length,
+        totalClasses: classesWithCounts.length,
+        totalStudents,
+      });
+    } catch (error) {
+      console.error("Error loading school data:", error);
+      toast.error("Failed to load school data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddTeacher = async () => {
+    if (!newTeacherEmail.trim() || !profile?.school_id) {
+      toast.error("Please enter a teacher's email");
+      return;
+    }
+
+    try {
+      // Find user by email
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("email", newTeacherEmail.trim())
+        .maybeSingle();
+
+      if (profileError) throw profileError;
+
+      if (!profileData) {
+        toast.error("User not found. They need to sign up first.");
+        return;
+      }
+
+      // Update profile with school_id
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ school_id: profile.school_id })
+        .eq("id", profileData.id);
+
+      if (updateError) throw updateError;
+
+      // Add role
+      const { error: roleError } = await supabase
+        .from("user_roles")
+        .insert({
+          user_id: profileData.id,
+          role: newTeacherRole,
+          school_id: profile.school_id,
+        });
+
+      if (roleError) throw roleError;
+
+      toast.success(`${newTeacherRole === "teacher" ? "Teacher" : "School admin"} added successfully`);
+      setNewTeacherEmail("");
+      setShowAddTeacher(false);
+      loadSchoolData();
+    } catch (error: any) {
+      console.error("Error adding teacher:", error);
+      toast.error("Failed to add teacher: " + error.message);
+    }
+  };
+
+  const handleDeleteClick = (teacherId: string) => {
+    setTeacherToDelete(teacherId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!teacherToDelete || !profile?.school_id) return;
+
+    try {
+      // Remove role
+      const { error: roleError } = await supabase
+        .from("user_roles")
+        .delete()
+        .eq("user_id", teacherToDelete)
+        .eq("school_id", profile.school_id);
+
+      if (roleError) throw roleError;
+
+      // Remove school assignment
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ school_id: null })
+        .eq("id", teacherToDelete);
+
+      if (updateError) throw updateError;
+
+      toast.success("Teacher removed from school");
+      setDeleteDialogOpen(false);
+      setTeacherToDelete(null);
+      loadSchoolData();
+    } catch (error) {
+      console.error("Error removing teacher:", error);
+      toast.error("Failed to remove teacher");
+    }
+  };
+
+  if (profileLoading || loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!profile?.school_id) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
+        <div className="text-center max-w-md">
+          <GraduationCap className="h-16 w-16 mx-auto mb-4 text-primary" />
+          <h2 className="text-2xl font-bold mb-2">No School Assignment</h2>
+          <p className="text-muted-foreground mb-4">
+            You need to be assigned to a school to access the admin dashboard.
+          </p>
+          <Button onClick={() => navigate("/")} variant="outline">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Home
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  School Admin Dashboard
+                </h1>
+                <p className="text-muted-foreground text-sm">{school?.name}</p>
+              </div>
+            </div>
+            <Button onClick={signOut} variant="outline" size="sm">
+              Logout
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-8">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-primary/10">
+                <Users className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Total Teachers</p>
+                <p className="text-2xl font-bold">{stats.totalTeachers}</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-accent/10">
+                <BookOpen className="w-6 h-6 text-accent" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Total Classes</p>
+                <p className="text-2xl font-bold">{stats.totalClasses}</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-secondary/10">
+                <GraduationCap className="w-6 h-6 text-secondary" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Total Students</p>
+                <p className="text-2xl font-bold">{stats.totalStudents}</p>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Teachers Management */}
+        <Card className="p-6 mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold">Teachers & Admins</h2>
+            <Button onClick={() => setShowAddTeacher(!showAddTeacher)}>
+              <UserPlus className="w-4 h-4 mr-2" />
+              Add Teacher
+            </Button>
+          </div>
+
+          {showAddTeacher && (
+            <div className="mb-6 p-4 border rounded-lg bg-muted/30">
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="teacher-email">Teacher Email</Label>
+                  <Input
+                    id="teacher-email"
+                    type="email"
+                    placeholder="teacher@example.com"
+                    value={newTeacherEmail}
+                    onChange={(e) => setNewTeacherEmail(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleAddTeacher()}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="teacher-role">Role</Label>
+                  <Select value={newTeacherRole} onValueChange={(v) => setNewTeacherRole(v as "teacher" | "school_admin")}>
+                    <SelectTrigger id="teacher-role">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="teacher">Teacher</SelectItem>
+                      <SelectItem value="school_admin">School Admin</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex gap-2">
+                  <Button onClick={handleAddTeacher} className="flex-1">
+                    Add
+                  </Button>
+                  <Button variant="outline" onClick={() => setShowAddTeacher(false)} className="flex-1">
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {teachers.map((teacher) => (
+                <TableRow key={teacher.id}>
+                  <TableCell className="font-medium">
+                    {teacher.full_name || "Not set"}
+                  </TableCell>
+                  <TableCell>{teacher.email}</TableCell>
+                  <TableCell>
+                    <Badge variant={teacher.role === "school_admin" ? "default" : "secondary"}>
+                      {teacher.role === "school_admin" ? "School Admin" : "Teacher"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteClick(teacher.id)}
+                    >
+                      <Trash2 className="w-4 h-4 text-destructive" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+              {teachers.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                    No teachers added yet
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </Card>
+
+        {/* Classes Overview */}
+        <Card className="p-6">
+          <h2 className="text-xl font-bold mb-6">Classes Overview</h2>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Class Name</TableHead>
+                <TableHead>Term</TableHead>
+                <TableHead>Year</TableHead>
+                <TableHead>Teacher</TableHead>
+                <TableHead className="text-right">Students</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {classes.map((cls) => (
+                <TableRow key={cls.id}>
+                  <TableCell className="font-medium">{cls.name}</TableCell>
+                  <TableCell>{cls.term || "Not set"}</TableCell>
+                  <TableCell>{cls.year || "Not set"}</TableCell>
+                  <TableCell>
+                    {cls.teacher?.full_name || cls.teacher?.email || "Not assigned"}
+                  </TableCell>
+                  <TableCell className="text-right">{cls.student_count}</TableCell>
+                </TableRow>
+              ))}
+              {classes.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                    No classes created yet
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </Card>
+      </main>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Teacher?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will remove the teacher from your school and revoke their access. They will need to be reassigned to access the system again.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setTeacherToDelete(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm}>
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+};
+
+export default SchoolAdmin;

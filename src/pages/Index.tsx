@@ -396,6 +396,14 @@ const Index = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              {hasRole("school_admin") && (
+                <Button asChild variant="outline" size="sm">
+                  <Link to="/school-admin">
+                    <Users className="w-4 h-4 mr-2" />
+                    School Admin
+                  </Link>
+                </Button>
+              )}
               {hasRole("super_admin") && (
                 <Button asChild variant="outline" size="sm">
                   <Link to="/super-admin">
