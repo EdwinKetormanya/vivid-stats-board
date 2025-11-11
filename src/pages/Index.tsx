@@ -533,7 +533,7 @@ const handleSchoolLogoChange = async (logoBase64: string) => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col gap-4">
             {/* System Title */}
-            <div className="text-center bg-primary/10 py-3 rounded-lg">
+            <div className="text-center bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 py-4 px-6 rounded-xl border border-primary/20 shadow-lg backdrop-blur-sm">
               <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent tracking-wide">
                 BASIC SCHOOLS LEARNING OUTCOME SYSTEM
               </h1>
