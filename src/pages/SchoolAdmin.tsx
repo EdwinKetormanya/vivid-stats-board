@@ -89,6 +89,15 @@ const SchoolAdmin = () => {
   const [teacherToDelete, setTeacherToDelete] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Confirmation dialog state
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [pendingTeacher, setPendingTeacher] = useState<{
+    email: string;
+    name: string | null;
+    role: "teacher" | "school_admin";
+    profileId: string;
+  } | null>(null);
 
   useEffect(() => {
     if (!profileLoading && !hasRole("school_admin") && !hasRole("super_admin")) {
@@ -217,11 +226,29 @@ const SchoolAdmin = () => {
         return;
       }
 
+      // Show confirmation dialog
+      setPendingTeacher({
+        email: newTeacherEmail.trim(),
+        name: profileData.full_name,
+        role: newTeacherRole,
+        profileId: profileData.id,
+      });
+      setConfirmDialogOpen(true);
+    } catch (error: any) {
+      console.error("Error validating teacher:", error);
+      toast.error("Failed to validate teacher: " + error.message);
+    }
+  };
+
+  const confirmAddTeacher = async () => {
+    if (!pendingTeacher || !profile?.school_id) return;
+
+    try {
       // Update profile with school_id
       const { error: updateError } = await supabase
         .from("profiles")
         .update({ school_id: profile.school_id })
-        .eq("id", profileData.id);
+        .eq("id", pendingTeacher.profileId);
 
       if (updateError) throw updateError;
 
@@ -229,16 +256,18 @@ const SchoolAdmin = () => {
       const { error: roleError } = await supabase
         .from("user_roles")
         .insert({
-          user_id: profileData.id,
-          role: newTeacherRole,
+          user_id: pendingTeacher.profileId,
+          role: pendingTeacher.role,
           school_id: profile.school_id,
         });
 
       if (roleError) throw roleError;
 
-      toast.success(`${newTeacherRole === "teacher" ? "Teacher" : "School admin"} added successfully`);
+      toast.success(`${pendingTeacher.role === "teacher" ? "Teacher" : "School admin"} added successfully`);
       setNewTeacherEmail("");
       setShowAddTeacher(false);
+      setConfirmDialogOpen(false);
+      setPendingTeacher(null);
       loadSchoolData();
     } catch (error: any) {
       console.error("Error adding teacher:", error);
@@ -785,6 +814,53 @@ const SchoolAdmin = () => {
           </Table>
         </Card>
       </main>
+
+      {/* Add Teacher Confirmation Dialog */}
+      <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Add Teacher</AlertDialogTitle>
+            <AlertDialogDescription>
+              Please review the details before adding this teacher to your school.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          
+          {pendingTeacher && (
+            <div className="space-y-3 py-4">
+              <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
+                <span className="text-sm font-medium text-muted-foreground">Email:</span>
+                <span className="text-sm font-semibold">{pendingTeacher.email}</span>
+              </div>
+              
+              <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
+                <span className="text-sm font-medium text-muted-foreground">Name:</span>
+                <span className="text-sm font-semibold">{pendingTeacher.name || "Not set"}</span>
+              </div>
+              
+              <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
+                <span className="text-sm font-medium text-muted-foreground">Role:</span>
+                <Badge variant={pendingTeacher.role === "school_admin" ? "default" : "secondary"}>
+                  {pendingTeacher.role === "school_admin" ? "School Admin" : "Teacher"}
+                </Badge>
+              </div>
+              
+              <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
+                <span className="text-sm font-medium text-muted-foreground">School:</span>
+                <span className="text-sm font-semibold">{school?.name}</span>
+              </div>
+            </div>
+          )}
+          
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPendingTeacher(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmAddTeacher}>
+              Add Teacher
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
