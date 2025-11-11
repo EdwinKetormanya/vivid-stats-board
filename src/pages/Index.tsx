@@ -200,25 +200,24 @@ const Index = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8 pb-24">
-        {/* Upload Section - Show before any data is loaded */}
-        {learners.length === 0 && (
-          <div className="max-w-2xl mx-auto mb-12">
-            <FileUpload onFileSelect={handleFileSelect} />
-          </div>
-        )}
+        {/* Tabs - Always show */}
+        <Tabs defaultValue="dashboard" className="w-full">
+          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
+            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+            <TabsTrigger value="settings">
+              <Settings className="w-4 h-4 mr-2" />
+              School Settings
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Tabs - Only show when data is loaded */}
-        {learners.length > 0 && (
-          <Tabs defaultValue="dashboard" className="w-full">
-            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
-              <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-              <TabsTrigger value="settings">
-                <Settings className="w-4 h-4 mr-2" />
-                School Settings
-              </TabsTrigger>
-            </TabsList>
+          <TabsContent value="dashboard">
+            {/* Upload Section - Always at top of dashboard */}
+            <div className="max-w-2xl mx-auto mb-8">
+              <FileUpload onFileSelect={handleFileSelect} />
+            </div>
 
-            <TabsContent value="dashboard">
+            {/* Dashboard Content - Show when data is loaded */}
+            {learners.length > 0 && (
               <div className="space-y-8 animate-in fade-in duration-500">
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -354,7 +353,7 @@ const Index = () => {
                   stats={stats}
                 />
                 
-                {/* Upload New File, Download, and Print Buttons */}
+                {/* Download and Print Buttons */}
                 <div className="flex justify-center gap-4 no-print flex-wrap">
                   <Button
                     onClick={handleDownloadExcel}
@@ -370,31 +369,15 @@ const Index = () => {
                     <Printer className="w-5 h-5 mr-2" />
                     Print All Reports
                   </Button>
-                  <label
-                    htmlFor="new-file-upload"
-                    className="px-8 py-3 bg-gradient-to-r from-primary to-accent text-white rounded-lg font-semibold cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center"
-                  >
-                    Upload New File
-                    <input
-                      id="new-file-upload"
-                      type="file"
-                      className="hidden"
-                      accept=".xlsx,.xls,.csv"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleFileSelect(file);
-                      }}
-                    />
-                  </label>
                 </div>
               </div>
-            </TabsContent>
+            )}
+          </TabsContent>
 
-            <TabsContent value="settings">
-              <SchoolManager />
-            </TabsContent>
-          </Tabs>
-        )}
+          <TabsContent value="settings">
+            <SchoolManager />
+          </TabsContent>
+        </Tabs>
 
         {/* Hidden Print Reports */}
         {learners.length > 0 && (
