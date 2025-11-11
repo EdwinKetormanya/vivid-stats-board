@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Users, BookOpen, GraduationCap, ArrowLeft, UserPlus, Trash2, Upload } from "lucide-react";
+import { Loader2, Users, BookOpen, GraduationCap, ArrowLeft, UserPlus, Trash2, Upload, Download } from "lucide-react";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
 import {
@@ -429,6 +429,87 @@ const SchoolAdmin = () => {
     }
   };
 
+  const handleExportTeachers = () => {
+    if (teachers.length === 0) {
+      toast.error("No teachers to export");
+      return;
+    }
+
+    try {
+      // Prepare data for export
+      const exportData = teachers.map((teacher) => ({
+        email: teacher.email,
+        name: teacher.full_name || "",
+        role: teacher.role === "school_admin" ? "school_admin" : "teacher",
+      }));
+
+      // Create worksheet
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      
+      // Set column widths
+      worksheet['!cols'] = [
+        { wch: 30 }, // email
+        { wch: 25 }, // name
+        { wch: 15 }, // role
+      ];
+
+      // Create workbook
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Teachers");
+
+      // Generate filename
+      const fileName = `${school?.name || 'school'}-teachers-${new Date().toISOString().split('T')[0]}.xlsx`;
+
+      // Download file
+      XLSX.writeFile(workbook, fileName);
+      
+      toast.success("Teachers list exported successfully!");
+    } catch (error) {
+      console.error("Error exporting teachers:", error);
+      toast.error("Failed to export teachers list");
+    }
+  };
+
+  const handleDownloadTemplate = () => {
+    try {
+      // Create template data with example row
+      const templateData = [
+        {
+          email: "teacher@example.com",
+          name: "John Doe",
+          role: "teacher",
+        },
+        {
+          email: "admin@example.com",
+          name: "Jane Smith",
+          role: "school_admin",
+        },
+      ];
+
+      // Create worksheet
+      const worksheet = XLSX.utils.json_to_sheet(templateData);
+      
+      // Set column widths
+      worksheet['!cols'] = [
+        { wch: 30 }, // email
+        { wch: 25 }, // name
+        { wch: 15 }, // role
+      ];
+
+      // Create workbook
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Teachers Template");
+
+      // Download file
+      XLSX.writeFile(workbook, "teachers-import-template.xlsx");
+      
+      toast.success("Template downloaded successfully!");
+    } catch (error) {
+      console.error("Error downloading template:", error);
+      toast.error("Failed to download template");
+    }
+  };
+
   if (profileLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -523,10 +604,16 @@ const SchoolAdmin = () => {
         <Card className="p-6 mb-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold">Teachers & Admins</h2>
-            <Button onClick={() => setShowAddTeacher(!showAddTeacher)}>
-              <UserPlus className="w-4 h-4 mr-2" />
-              Add Teacher
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={handleExportTeachers} variant="outline" disabled={teachers.length === 0}>
+                <Download className="w-4 h-4 mr-2" />
+                Export List
+              </Button>
+              <Button onClick={() => setShowAddTeacher(!showAddTeacher)}>
+                <UserPlus className="w-4 h-4 mr-2" />
+                Add Teacher
+              </Button>
+            </div>
           </div>
 
           {/* Bulk Upload Section */}
@@ -558,14 +645,25 @@ const SchoolAdmin = () => {
                 id="bulk-upload-teachers"
               />
               
-              <Button
-                onClick={() => fileInputRef.current?.click()}
-                className="w-full"
-                disabled={isUploading}
-              >
-                <Upload className="w-4 h-4 mr-2" />
-                {isUploading ? "Uploading..." : "Upload Excel File"}
-              </Button>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <Button
+                  onClick={handleDownloadTemplate}
+                  variant="outline"
+                  className="w-full"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Download Template
+                </Button>
+                
+                <Button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full"
+                  disabled={isUploading}
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  {isUploading ? "Uploading..." : "Upload Excel File"}
+                </Button>
+              </div>
             </div>
           </div>
 
