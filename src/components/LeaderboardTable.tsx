@@ -16,9 +16,10 @@ interface LeaderboardTableProps {
 
 export const LeaderboardTable = ({ learners }: LeaderboardTableProps) => {
   const getPositionColor = (position: string) => {
-    if (position.includes("1st")) return "bg-gradient-to-r from-yellow-400 to-yellow-600 text-white";
-    if (position.includes("2nd")) return "bg-gradient-to-r from-gray-300 to-gray-500 text-white";
-    if (position.includes("3rd")) return "bg-gradient-to-r from-orange-400 to-orange-600 text-white";
+    const pos = String(position || "");
+    if (pos.includes("1st")) return "bg-gradient-to-r from-yellow-400 to-yellow-600 text-white";
+    if (pos.includes("2nd")) return "bg-gradient-to-r from-gray-300 to-gray-500 text-white";
+    if (pos.includes("3rd")) return "bg-gradient-to-r from-orange-400 to-orange-600 text-white";
     return "bg-muted text-muted-foreground";
   };
 
