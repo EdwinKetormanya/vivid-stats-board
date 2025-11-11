@@ -978,22 +978,45 @@ const SchoolAdmin = () => {
               )}
             </div>
             
-            {/* Filter Tabs */}
-            <Tabs value={bulkImportFilter} onValueChange={(v) => setBulkImportFilter(v as "all" | "valid" | "errors")} className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="all" className="text-xs">
-                  All ({pendingBulkTeachers.length})
-                </TabsTrigger>
-                <TabsTrigger value="valid" className="text-xs">
-                  <CheckCircle2 className="w-3 h-3 mr-1" />
-                  Valid ({pendingBulkTeachers.filter(t => t.validationStatus === "valid").length})
-                </TabsTrigger>
-                <TabsTrigger value="errors" className="text-xs">
-                  <XCircle className="w-3 h-3 mr-1" />
-                  Errors ({pendingBulkTeachers.filter(t => t.validationStatus === "not_found" || t.validationStatus === "already_added").length})
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+            {/* Filter Tabs and Actions */}
+            <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+              <Tabs value={bulkImportFilter} onValueChange={(v) => setBulkImportFilter(v as "all" | "valid" | "errors")} className="flex-1">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="all" className="text-xs">
+                    All ({pendingBulkTeachers.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="valid" className="text-xs">
+                    <CheckCircle2 className="w-3 h-3 mr-1" />
+                    Valid ({pendingBulkTeachers.filter(t => t.validationStatus === "valid").length})
+                  </TabsTrigger>
+                  <TabsTrigger value="errors" className="text-xs">
+                    <XCircle className="w-3 h-3 mr-1" />
+                    Errors ({pendingBulkTeachers.filter(t => t.validationStatus === "not_found" || t.validationStatus === "already_added").length})
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const invalidCount = pendingBulkTeachers.filter(t => 
+                    t.validationStatus === "not_found" || t.validationStatus === "already_added"
+                  ).length;
+                  setPendingBulkTeachers(prev => 
+                    prev.filter(t => t.validationStatus === "valid")
+                  );
+                  toast.success(`Removed ${invalidCount} invalid teacher${invalidCount !== 1 ? 's' : ''}`);
+                }}
+                disabled={pendingBulkTeachers.filter(t => 
+                  t.validationStatus === "not_found" || t.validationStatus === "already_added"
+                ).length === 0}
+                className="whitespace-nowrap"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Remove All Invalid
+              </Button>
+            </div>
           </div>
           
           <div className="overflow-auto flex-1 py-4">
