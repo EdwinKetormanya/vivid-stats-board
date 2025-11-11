@@ -22,6 +22,7 @@ import { exportToExcel } from "@/utils/excelExporter";
 import { LearnerScore } from "@/types/learner";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import kpsBrandLogo from "@/assets/kps-brand-logo.png";
 
 interface Class {
   id: string;
@@ -544,27 +545,34 @@ const handleSchoolLogoChange = async (logoBase64: string) => {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              {hasRole("school_admin") && (
-                <Button asChild variant="outline" size="sm">
-                  <Link to="/school-admin">
-                    <Users className="w-4 h-4 mr-2" />
-                    School Admin
-                  </Link>
+            <div className="flex items-center gap-4">
+              <img 
+                src={kpsBrandLogo} 
+                alt="KPS Logo" 
+                className="h-16 w-16 object-contain"
+              />
+              <div className="flex items-center gap-2">
+                {hasRole("school_admin") && (
+                  <Button asChild variant="outline" size="sm">
+                    <Link to="/school-admin">
+                      <Users className="w-4 h-4 mr-2" />
+                      School Admin
+                    </Link>
+                  </Button>
+                )}
+                {hasRole("super_admin") && (
+                  <Button asChild variant="outline" size="sm">
+                    <Link to="/super-admin">
+                      <Shield className="w-4 h-4 mr-2" />
+                      Super Admin
+                    </Link>
+                  </Button>
+                )}
+                <Button onClick={signOut} variant="outline" size="sm">
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout
                 </Button>
-              )}
-              {hasRole("super_admin") && (
-                <Button asChild variant="outline" size="sm">
-                  <Link to="/super-admin">
-                    <Shield className="w-4 h-4 mr-2" />
-                    Super Admin
-                  </Link>
-                </Button>
-              )}
-              <Button onClick={signOut} variant="outline" size="sm">
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
-              </Button>
+              </div>
             </div>
           </div>
         </div>
