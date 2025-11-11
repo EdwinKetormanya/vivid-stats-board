@@ -200,25 +200,25 @@ const Index = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8 pb-24">
-        <Tabs defaultValue="dashboard" className="w-full">
-          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
-            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-            <TabsTrigger value="settings">
-              <Settings className="w-4 h-4 mr-2" />
-              School Settings
-            </TabsTrigger>
-          </TabsList>
+        {/* Upload Section - Show before any data is loaded */}
+        {learners.length === 0 && (
+          <div className="max-w-2xl mx-auto mb-12">
+            <FileUpload onFileSelect={handleFileSelect} />
+          </div>
+        )}
 
-          <TabsContent value="dashboard">
-            {/* Upload Section */}
-            {learners.length === 0 && (
-              <div className="max-w-2xl mx-auto mb-12">
-                <FileUpload onFileSelect={handleFileSelect} />
-              </div>
-            )}
+        {/* Tabs - Only show when data is loaded */}
+        {learners.length > 0 && (
+          <Tabs defaultValue="dashboard" className="w-full">
+            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
+              <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+              <TabsTrigger value="settings">
+                <Settings className="w-4 h-4 mr-2" />
+                School Settings
+              </TabsTrigger>
+            </TabsList>
 
-            {/* Dashboard Content */}
-            {learners.length > 0 && (
+            <TabsContent value="dashboard">{/* Dashboard Content */}
               <div className="space-y-8 animate-in fade-in duration-500">
                 {/* Stats Grid */}
 ...
@@ -256,13 +256,13 @@ const Index = () => {
                   </label>
                 </div>
               </div>
-            )}
-          </TabsContent>
+            </TabsContent>
 
-          <TabsContent value="settings">
-            <SchoolManager />
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="settings">
+              <SchoolManager />
+            </TabsContent>
+          </Tabs>
+        )}
 
         {/* Hidden Print Reports */}
         {learners.length > 0 && (
