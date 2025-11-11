@@ -125,6 +125,7 @@ const SchoolAdmin = () => {
   const [bulkRoleChangeValue, setBulkRoleChangeValue] = useState<"teacher" | "school_admin">("teacher");
   const [saveTemplateDialogOpen, setSaveTemplateDialogOpen] = useState(false);
   const [loadTemplateDialogOpen, setLoadTemplateDialogOpen] = useState(false);
+  const [selectedTemplatesForDelete, setSelectedTemplatesForDelete] = useState<Set<string>>(new Set());
   const [templateName, setTemplateName] = useState("");
   const [templateDescription, setTemplateDescription] = useState("");
   const [savedTemplates, setSavedTemplates] = useState<Array<{
@@ -355,6 +356,26 @@ const SchoolAdmin = () => {
     } catch (error) {
       console.error("Error deleting template:", error);
       toast.error("Failed to delete template");
+    }
+  };
+
+  const bulkDeleteTemplates = async () => {
+    if (selectedTemplatesForDelete.size === 0) return;
+
+    try {
+      const { error } = await supabase
+        .from("bulk_import_templates")
+        .delete()
+        .in("id", Array.from(selectedTemplatesForDelete));
+
+      if (error) throw error;
+
+      toast.success(`Deleted ${selectedTemplatesForDelete.size} template(s)`);
+      setSelectedTemplatesForDelete(new Set());
+      loadTemplates();
+    } catch (error) {
+      console.error("Error deleting templates:", error);
+      toast.error("Failed to delete templates");
     }
   };
 
@@ -1965,14 +1986,41 @@ const SchoolAdmin = () => {
       </AlertDialog>
 
       {/* Load Template Dialog */}
-      <AlertDialog open={loadTemplateDialogOpen} onOpenChange={setLoadTemplateDialogOpen}>
+      <AlertDialog open={loadTemplateDialogOpen} onOpenChange={(open) => {
+        setLoadTemplateDialogOpen(open);
+        if (!open) setSelectedTemplatesForDelete(new Set());
+      }}>
         <AlertDialogContent className="max-w-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>Load Template</AlertDialogTitle>
             <AlertDialogDescription>
-              Select a template to load into the bulk import list.
+              Select a template to load or delete multiple templates.
             </AlertDialogDescription>
           </AlertDialogHeader>
+          {selectedTemplatesForDelete.size > 0 && (
+            <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md mx-6">
+              <span className="text-sm font-medium">{selectedTemplatesForDelete.size} selected</span>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => {
+                  if (confirm(`Delete ${selectedTemplatesForDelete.size} template(s)?`)) {
+                    bulkDeleteTemplates();
+                  }
+                }}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete Selected
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedTemplatesForDelete(new Set())}
+              >
+                Clear Selection
+              </Button>
+            </div>
+          )}
           <div className="max-h-96 overflow-auto py-4">
             {savedTemplates.length === 0 ? (
               <p className="text-center text-muted-foreground py-8">No saved templates</p>
@@ -1980,11 +2028,30 @@ const SchoolAdmin = () => {
               <div className="space-y-2">
                 {savedTemplates.map((template) => {
                   const isOwner = template.created_by === profile?.id;
+                  const isSelected = selectedTemplatesForDelete.has(template.id);
                   return (
                     <div
                       key={template.id}
-                      className="flex items-start justify-between p-3 border rounded-lg hover:bg-muted/50"
+                      className={`flex items-start gap-3 p-3 border rounded-lg hover:bg-muted/50 ${isSelected ? 'bg-muted/50 border-primary' : ''}`}
                     >
+                      {isOwner && (
+                        <div className="pt-1">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={(e) => {
+                              const newSet = new Set(selectedTemplatesForDelete);
+                              if (e.target.checked) {
+                                newSet.add(template.id);
+                              } else {
+                                newSet.delete(template.id);
+                              }
+                              setSelectedTemplatesForDelete(newSet);
+                            }}
+                            className="cursor-pointer w-4 h-4"
+                          />
+                        </div>
+                      )}
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                           <h4 className="font-medium">{template.name}</h4>
