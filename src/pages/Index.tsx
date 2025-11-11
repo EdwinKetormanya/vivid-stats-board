@@ -218,10 +218,142 @@ const Index = () => {
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="dashboard">{/* Dashboard Content */}
+            <TabsContent value="dashboard">
               <div className="space-y-8 animate-in fade-in duration-500">
                 {/* Stats Grid */}
-...
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <StatCard
+                    title="Total Learners"
+                    value={stats.totalLearners}
+                    icon={Users}
+                    gradient="primary"
+                  />
+                  <StatCard
+                    title="Class Average"
+                    value={`${stats.averageScore}%`}
+                    icon={TrendingUp}
+                    gradient="success"
+                  />
+                  <StatCard
+                    title="Top Performer"
+                    value={stats.topPerformer}
+                    icon={Trophy}
+                    gradient="accent"
+                  />
+                  <StatCard
+                    title="Lowest Score"
+                    value={stats.lowestScore}
+                    icon={BarChart3}
+                    gradient="primary"
+                  />
+                </div>
+
+                {/* Charts Section */}
+                <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
+                  <PerformanceChart data={subjectPerformance} />
+                </div>
+
+                {/* Performance Categories */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                      <TrendingUp className="w-5 h-5 text-success" />
+                      Above Average ({aboveAverage.length})
+                    </h3>
+                    <LeaderboardTable 
+                      learners={aboveAverage
+                        .sort((a, b) => b.totalRawScore - a.totalRawScore)
+                        .slice(0, 5)
+                        .map((l) => ({
+                          name: l.name,
+                          position: l.position,
+                          totalScore: l.totalRawScore,
+                          averageScore: l.averageScore,
+                        }))} 
+                    />
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                      <Users className="w-5 h-5 text-warning" />
+                      On Average ({onAverage.length})
+                    </h3>
+                    <LeaderboardTable 
+                      learners={onAverage
+                        .sort((a, b) => b.totalRawScore - a.totalRawScore)
+                        .slice(0, 5)
+                        .map((l) => ({
+                          name: l.name,
+                          position: l.position,
+                          totalScore: l.totalRawScore,
+                          averageScore: l.averageScore,
+                        }))} 
+                    />
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                      <BarChart3 className="w-5 h-5 text-destructive" />
+                      Below Average ({belowAverage.length})
+                    </h3>
+                    <LeaderboardTable 
+                      learners={belowAverage
+                        .sort((a, b) => b.totalRawScore - a.totalRawScore)
+                        .slice(0, 5)
+                        .map((l) => ({
+                          name: l.name,
+                          position: l.position,
+                          totalScore: l.totalRawScore,
+                          averageScore: l.averageScore,
+                        }))} 
+                    />
+                  </div>
+                </div>
+
+                {/* Top Performers */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                    <Trophy className="w-5 h-5 text-accent" />
+                    Top 10 Performers
+                  </h3>
+                  <LeaderboardTable learners={topLearners} />
+                </div>
+
+                {/* Teacher Remarks Section */}
+                <div className="space-y-4">
+                  <TeacherRemarksSelector 
+                    learners={learners} 
+                    onRemarkChange={handleTeacherRemarkChange}
+                    onConductChange={handleConductChange}
+                    onInterestChange={handleInterestChange}
+                    term={term}
+                    year={year}
+                    numberOnRoll={numberOnRoll}
+                    vacationDate={vacationDate}
+                    reopeningDate={reopeningDate}
+                    schoolLogo={schoolLogo}
+                    region={region}
+                    district={district}
+                    schoolName={schoolName}
+                    onTermChange={setTerm}
+                    onYearChange={setYear}
+                    onNumberOnRollChange={setNumberOnRoll}
+                    onVacationDateChange={setVacationDate}
+                    onReopeningDateChange={setReopeningDate}
+                    onSchoolLogoChange={setSchoolLogo}
+                    onRegionChange={handleRegionChange}
+                    onDistrictChange={handleDistrictChange}
+                    onSchoolNameChange={handleSchoolNameChange}
+                  />
+                </div>
+
+                {/* Insights and Recommendations */}
+                <InsightsPanel
+                  learners={learners}
+                  subjectPerformance={subjectPerformance}
+                  stats={stats}
+                />
+                
                 {/* Upload New File, Download, and Print Buttons */}
                 <div className="flex justify-center gap-4 no-print flex-wrap">
                   <Button
