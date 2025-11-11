@@ -88,14 +88,14 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
           {subjects.map((subject, index) => (
             <div 
               key={index} 
-              className="grid grid-cols-[1fr_auto_auto_auto_1fr] gap-2 items-center p-1.5 bg-gray-50 border border-gray-300 rounded text-xs"
+              className="grid grid-cols-[1fr_auto_auto_auto_1fr] gap-6 items-center p-1.5 bg-gray-50 border border-gray-300 rounded text-xs"
             >
               <span className="font-medium">{subject.label}</span>
-              <span className="font-bold text-sm text-center w-10">{subject.value || 0}</span>
-              <span className="font-bold text-sm text-center w-8 bg-primary text-white rounded px-1">
+              <span className="font-bold text-sm text-center w-12">{subject.value || 0}</span>
+              <span className="font-bold text-sm text-center w-12 bg-primary text-white rounded px-1">
                 {getGrade(subject.value)}
               </span>
-              <span className="font-bold text-sm text-center w-8 bg-secondary text-secondary-foreground rounded px-1">
+              <span className="font-bold text-sm text-center w-12 bg-secondary text-secondary-foreground rounded px-1">
                 {getBECEGrade(subject.value)}
               </span>
               <span className="text-gray-600 italic text-right">
