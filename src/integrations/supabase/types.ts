@@ -20,6 +20,7 @@ export type Database = {
           created_by: string
           description: string | null
           id: string
+          is_shared: boolean
           name: string
           school_id: string
           teachers: Json
@@ -30,6 +31,7 @@ export type Database = {
           created_by: string
           description?: string | null
           id?: string
+          is_shared?: boolean
           name: string
           school_id: string
           teachers: Json
@@ -40,6 +42,7 @@ export type Database = {
           created_by?: string
           description?: string | null
           id?: string
+          is_shared?: boolean
           name?: string
           school_id?: string
           teachers?: Json

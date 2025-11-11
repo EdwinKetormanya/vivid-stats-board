@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Users, BookOpen, GraduationCap, ArrowLeft, UserPlus, Trash2, Upload, Download, CheckCircle2, AlertCircle, XCircle, Search, X, ArrowUpDown, ArrowUp, ArrowDown, Pencil, Check } from "lucide-react";
+import { Loader2, Users, BookOpen, GraduationCap, ArrowLeft, UserPlus, Trash2, Upload, Download, CheckCircle2, AlertCircle, XCircle, Search, X, ArrowUpDown, ArrowUp, ArrowDown, Pencil, Check, Share2 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
 import {
@@ -133,6 +133,8 @@ const SchoolAdmin = () => {
     description: string | null;
     teachers: any;
     created_at: string;
+    created_by: string;
+    is_shared: boolean;
   }>>([]);
   const [importHistoryDialogOpen, setImportHistoryDialogOpen] = useState(false);
   const [importHistory, setImportHistory] = useState<Array<{
@@ -352,6 +354,23 @@ const SchoolAdmin = () => {
     } catch (error) {
       console.error("Error deleting template:", error);
       toast.error("Failed to delete template");
+    }
+  };
+
+  const toggleTemplateSharing = async (templateId: string, currentSharedState: boolean) => {
+    try {
+      const { error } = await supabase
+        .from("bulk_import_templates")
+        .update({ is_shared: !currentSharedState })
+        .eq("id", templateId);
+
+      if (error) throw error;
+
+      toast.success(currentSharedState ? "Template is now private" : "Template is now shared with other school admins");
+      loadTemplates();
+    } catch (error) {
+      console.error("Error updating template:", error);
+      toast.error("Failed to update template");
     }
   };
 
@@ -1958,43 +1977,71 @@ const SchoolAdmin = () => {
               <p className="text-center text-muted-foreground py-8">No saved templates</p>
             ) : (
               <div className="space-y-2">
-                {savedTemplates.map((template) => (
-                  <div
-                    key={template.id}
-                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50"
-                  >
-                    <div className="flex-1">
-                      <h4 className="font-medium">{template.name}</h4>
-                      {template.description && (
-                        <p className="text-sm text-muted-foreground">{template.description}</p>
-                      )}
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {template.teachers.length} teacher{template.teachers.length !== 1 ? 's' : ''} • 
-                        Created {new Date(template.created_at).toLocaleDateString()}
-                      </p>
+                {savedTemplates.map((template) => {
+                  const isOwner = template.created_by === profile?.id;
+                  return (
+                    <div
+                      key={template.id}
+                      className="flex items-start justify-between p-3 border rounded-lg hover:bg-muted/50"
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="font-medium">{template.name}</h4>
+                          {template.is_shared && (
+                            <Badge variant="outline" className="text-xs">
+                              <Share2 className="w-3 h-3 mr-1" />
+                              Shared
+                            </Badge>
+                          )}
+                          {!isOwner && (
+                            <Badge variant="secondary" className="text-xs">
+                              By other admin
+                            </Badge>
+                          )}
+                        </div>
+                        {template.description && (
+                          <p className="text-sm text-muted-foreground">{template.description}</p>
+                        )}
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {template.teachers.length} teacher{template.teachers.length !== 1 ? 's' : ''} • 
+                          Created {new Date(template.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => loadTemplate(template.id)}
+                        >
+                          Load
+                        </Button>
+                        {isOwner && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toggleTemplateSharing(template.id, template.is_shared)}
+                              title={template.is_shared ? "Make private" : "Share with other school admins"}
+                            >
+                              <Share2 className={`w-4 h-4 ${template.is_shared ? 'text-primary' : 'text-muted-foreground'}`} />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                if (confirm(`Delete template "${template.name}"?`)) {
+                                  deleteTemplate(template.id);
+                                }
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4 text-destructive" />
+                            </Button>
+                          </>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => loadTemplate(template.id)}
-                      >
-                        Load
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          if (confirm(`Delete template "${template.name}"?`)) {
-                            deleteTemplate(template.id);
-                          }
-                        }}
-                      >
-                        <Trash2 className="w-4 h-4 text-destructive" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
