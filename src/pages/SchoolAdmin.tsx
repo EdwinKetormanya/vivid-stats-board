@@ -996,26 +996,81 @@ const SchoolAdmin = () => {
                 </TabsList>
               </Tabs>
               
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const invalidCount = pendingBulkTeachers.filter(t => 
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const filteredTeachers = pendingBulkTeachers.filter(teacher => {
+                      // Apply status filter
+                      if (bulkImportFilter === "valid") {
+                        if (teacher.validationStatus !== "valid") return false;
+                      }
+                      if (bulkImportFilter === "errors") {
+                        if (teacher.validationStatus !== "not_found" && teacher.validationStatus !== "already_added") return false;
+                      }
+                      
+                      // Apply search filter
+                      if (bulkImportSearch.trim()) {
+                        const searchLower = bulkImportSearch.toLowerCase();
+                        const emailMatch = teacher.email.toLowerCase().includes(searchLower);
+                        const nameMatch = 
+                          teacher.fullName?.toLowerCase().includes(searchLower) ||
+                          teacher.existingName?.toLowerCase().includes(searchLower);
+                        
+                        if (!emailMatch && !nameMatch) return false;
+                      }
+                      
+                      return true;
+                    });
+
+                    if (filteredTeachers.length === 0) {
+                      toast.error("No teachers to export");
+                      return;
+                    }
+
+                    const exportData = filteredTeachers.map(teacher => ({
+                      Status: teacher.validationStatus === "valid" ? "Ready" : 
+                              teacher.validationStatus === "already_added" ? "Already Added" : "Not Found",
+                      Email: teacher.email,
+                      Name: teacher.existingName || teacher.fullName || "Not set",
+                      Role: teacher.role === "school_admin" ? "School Admin" : "Teacher",
+                    }));
+
+                    const ws = XLSX.utils.json_to_sheet(exportData);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, "Preview");
+                    XLSX.writeFile(wb, `bulk-import-preview-${new Date().toISOString().split('T')[0]}.xlsx`);
+                    toast.success(`Exported ${filteredTeachers.length} teacher${filteredTeachers.length !== 1 ? 's' : ''}`);
+                  }}
+                  disabled={pendingBulkTeachers.length === 0}
+                  className="whitespace-nowrap"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Export Preview
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const invalidCount = pendingBulkTeachers.filter(t => 
+                      t.validationStatus === "not_found" || t.validationStatus === "already_added"
+                    ).length;
+                    setPendingBulkTeachers(prev => 
+                      prev.filter(t => t.validationStatus === "valid")
+                    );
+                    toast.success(`Removed ${invalidCount} invalid teacher${invalidCount !== 1 ? 's' : ''}`);
+                  }}
+                  disabled={pendingBulkTeachers.filter(t => 
                     t.validationStatus === "not_found" || t.validationStatus === "already_added"
-                  ).length;
-                  setPendingBulkTeachers(prev => 
-                    prev.filter(t => t.validationStatus === "valid")
-                  );
-                  toast.success(`Removed ${invalidCount} invalid teacher${invalidCount !== 1 ? 's' : ''}`);
-                }}
-                disabled={pendingBulkTeachers.filter(t => 
-                  t.validationStatus === "not_found" || t.validationStatus === "already_added"
-                ).length === 0}
-                className="whitespace-nowrap"
-              >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Remove All Invalid
-              </Button>
+                  ).length === 0}
+                  className="whitespace-nowrap"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Remove All Invalid
+                </Button>
+              </div>
             </div>
           </div>
           
