@@ -68,6 +68,25 @@ export const UserRoleManager = () => {
 
       if (profilesError) throw profilesError;
 
+      // Log profile access for audit (bulk query by school admin)
+      if (profilesData && profilesData.length > 0) {
+        const { data: { user } } = await supabase.auth.getUser();
+        const { data: userRoles } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user?.id || "");
+        
+        const isSchoolAdmin = userRoles?.some(r => r.role === "school_admin");
+        
+        if (isSchoolAdmin && user) {
+          await supabase.from("profile_access_logs").insert({
+            accessed_by: user.id,
+            accessed_profile_id: user.id, // Self-reference for bulk queries
+            access_type: "bulk_query"
+          });
+        }
+      }
+
       // Load roles
       const { data: rolesData, error: rolesError } = await supabase
         .from("user_roles")
