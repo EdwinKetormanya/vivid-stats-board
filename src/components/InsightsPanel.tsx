@@ -538,7 +538,7 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
             </div>
             <div className="p-4 rounded-lg bg-success/10 border border-success/20">
               <div className="flex items-center justify-between mb-1">
-                <p className="text-sm text-muted-foreground">Avg Pass Rate</p>
+                <p className="text-sm text-muted-foreground">Students Passing</p>
                 {(() => {
                   const filteredAvg = filteredSubjects.reduce((sum, s) => sum + s.passRate, 0) / filteredSubjects.length;
                   const overallAvg = subjectBreakdown.reduce((sum, s) => sum + s.passRate, 0) / subjectBreakdown.length;
@@ -568,7 +568,7 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
             </div>
             <div className="p-4 rounded-lg bg-accent/10 border border-accent/20">
               <div className="flex items-center justify-between mb-1">
-                <p className="text-sm text-muted-foreground">Avg Excellence</p>
+                <p className="text-sm text-muted-foreground">Top Performers</p>
                 {(() => {
                   const filteredAvg = filteredSubjects.reduce((sum, s) => sum + s.excellenceRate, 0) / filteredSubjects.length;
                   const overallAvg = subjectBreakdown.reduce((sum, s) => sum + s.excellenceRate, 0) / subjectBreakdown.length;
@@ -627,8 +627,8 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Subjects ({subjectBreakdown.length})</SelectItem>
-                <SelectItem value="critical">Critical (&lt;30% pass rate)</SelectItem>
-                <SelectItem value="low-pass">Low Pass Rate (&lt;50%)</SelectItem>
+                <SelectItem value="critical">Critical (&lt;30% passing)</SelectItem>
+                <SelectItem value="low-pass">Low Pass (&lt;50% passing)</SelectItem>
                 <SelectItem value="high-fail">High Failing Count (&gt;5)</SelectItem>
                 <SelectItem value="weak">Weak Performance (&lt;30% avg)</SelectItem>
                 <SelectItem value="excellent">Excellent (&ge;40% avg)</SelectItem>
@@ -644,8 +644,8 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
                 <th className="text-left py-3 px-4 font-semibold text-foreground">Subject</th>
                 <th className="text-center py-3 px-4 font-semibold text-foreground">Average</th>
                 <th className="text-center py-3 px-4 font-semibold text-foreground">Highest</th>
-                <th className="text-center py-3 px-4 font-semibold text-foreground">Pass Rate</th>
-                <th className="text-center py-3 px-4 font-semibold text-foreground">Excellence Rate</th>
+                <th className="text-center py-3 px-4 font-semibold text-foreground">Passing %</th>
+                <th className="text-center py-3 px-4 font-semibold text-foreground">Excellence %</th>
                 <th className="text-center py-3 px-4 font-semibold text-foreground">Failing</th>
                 <th className="text-left py-3 px-4 font-semibold text-foreground">Status</th>
               </tr>
