@@ -529,73 +529,13 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
 
         {/* Filtered Summary Statistics */}
         {filteredSubjects.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
               <p className="text-sm text-muted-foreground mb-1">Subjects Shown</p>
               <p className="text-2xl font-bold text-primary">
                 {filteredSubjects.length}
                 <span className="text-sm text-muted-foreground ml-1">/ {subjectBreakdown.length}</span>
               </p>
-            </div>
-            <div className="p-4 rounded-lg bg-success/10 border border-success/20">
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-sm text-muted-foreground">Students Passing</p>
-                {(() => {
-                  const filteredAvg = filteredSubjects.reduce((sum, s) => sum + s.passRate, 0) / filteredSubjects.length;
-                  const overallAvg = subjectBreakdown.reduce((sum, s) => sum + s.passRate, 0) / subjectBreakdown.length;
-                  const diff = filteredAvg - overallAvg;
-                  return diff > 0 ? (
-                    <TrendingUp className="w-4 h-4 text-success" />
-                  ) : diff < 0 ? (
-                    <TrendingDown className="w-4 h-4 text-destructive" />
-                  ) : null;
-                })()}
-              </div>
-              <div className="flex items-baseline gap-2">
-                <p className="text-2xl font-bold text-success">
-                  {(filteredSubjects.reduce((sum, s) => sum + s.passRate, 0) / filteredSubjects.length).toFixed(1)}%
-                </p>
-                {(() => {
-                  const filteredAvg = filteredSubjects.reduce((sum, s) => sum + s.passRate, 0) / filteredSubjects.length;
-                  const overallAvg = subjectBreakdown.reduce((sum, s) => sum + s.passRate, 0) / subjectBreakdown.length;
-                  const diff = filteredAvg - overallAvg;
-                  return diff !== 0 ? (
-                    <span className={`text-xs font-medium ${diff > 0 ? 'text-success' : 'text-destructive'}`}>
-                      {diff > 0 ? '+' : ''}{diff.toFixed(1)}%
-                    </span>
-                  ) : null;
-                })()}
-              </div>
-            </div>
-            <div className="p-4 rounded-lg bg-accent/10 border border-accent/20">
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-sm text-muted-foreground">Top Performers</p>
-                {(() => {
-                  const filteredAvg = filteredSubjects.reduce((sum, s) => sum + s.excellenceRate, 0) / filteredSubjects.length;
-                  const overallAvg = subjectBreakdown.reduce((sum, s) => sum + s.excellenceRate, 0) / subjectBreakdown.length;
-                  const diff = filteredAvg - overallAvg;
-                  return diff > 0 ? (
-                    <TrendingUp className="w-4 h-4 text-success" />
-                  ) : diff < 0 ? (
-                    <TrendingDown className="w-4 h-4 text-destructive" />
-                  ) : null;
-                })()}
-              </div>
-              <div className="flex items-baseline gap-2">
-                <p className="text-2xl font-bold text-accent">
-                  {(filteredSubjects.reduce((sum, s) => sum + s.excellenceRate, 0) / filteredSubjects.length).toFixed(1)}%
-                </p>
-                {(() => {
-                  const filteredAvg = filteredSubjects.reduce((sum, s) => sum + s.excellenceRate, 0) / filteredSubjects.length;
-                  const overallAvg = subjectBreakdown.reduce((sum, s) => sum + s.excellenceRate, 0) / subjectBreakdown.length;
-                  const diff = filteredAvg - overallAvg;
-                  return diff !== 0 ? (
-                    <span className={`text-xs font-medium ${diff > 0 ? 'text-success' : 'text-destructive'}`}>
-                      {diff > 0 ? '+' : ''}{diff.toFixed(1)}%
-                    </span>
-                  ) : null;
-                })()}
-              </div>
             </div>
             <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20">
               <div className="flex items-center justify-between mb-1">
@@ -645,8 +585,6 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
                 <th className="text-left py-3 px-4 font-semibold text-foreground">Subject</th>
                 <th className="text-center py-3 px-4 font-semibold text-foreground">Average</th>
                 <th className="text-center py-3 px-4 font-semibold text-foreground">Highest</th>
-                <th className="text-center py-3 px-4 font-semibold text-foreground">Passing %</th>
-                <th className="text-center py-3 px-4 font-semibold text-foreground">Excellence %</th>
                 <th className="text-center py-3 px-4 font-semibold text-foreground">Failing</th>
                 <th className="text-left py-3 px-4 font-semibold text-foreground">Status</th>
               </tr>
@@ -654,7 +592,7 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
             <tbody>
               {filteredSubjects.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-muted-foreground">
+                  <td colSpan={5} className="py-8 text-center text-muted-foreground">
                     No subjects match the selected filter criteria
                   </td>
                 </tr>
@@ -678,24 +616,6 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
                     </td>
                     <td className="text-center py-4 px-4 text-muted-foreground">
                       {subject.highest.toFixed(1)}%
-                    </td>
-                    <td className="text-center py-4 px-4">
-                      <div className="flex items-center justify-center gap-2">
-                        <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-primary transition-all"
-                            style={{ width: `${Math.min(subject.passRate, 100)}%` }}
-                          />
-                        </div>
-                        <span className="text-sm font-medium text-muted-foreground">
-                          {subject.passRate.toFixed(1)}%
-                        </span>
-                      </div>
-                    </td>
-                    <td className="text-center py-4 px-4">
-                      <span className="text-sm font-medium text-success">
-                        {subject.excellenceRate.toFixed(1)}%
-                      </span>
                     </td>
                     <td className="text-center py-4 px-4">
                       <span className={`px-2 py-1 rounded text-xs font-semibold ${
