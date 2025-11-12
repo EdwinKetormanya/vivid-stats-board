@@ -537,19 +537,81 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
               </p>
             </div>
             <div className="p-4 rounded-lg bg-success/10 border border-success/20">
-              <p className="text-sm text-muted-foreground mb-1">Avg Pass Rate</p>
-              <p className="text-2xl font-bold text-success">
-                {(filteredSubjects.reduce((sum, s) => sum + s.passRate, 0) / filteredSubjects.length).toFixed(1)}%
-              </p>
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-sm text-muted-foreground">Avg Pass Rate</p>
+                {(() => {
+                  const filteredAvg = filteredSubjects.reduce((sum, s) => sum + s.passRate, 0) / filteredSubjects.length;
+                  const overallAvg = subjectBreakdown.reduce((sum, s) => sum + s.passRate, 0) / subjectBreakdown.length;
+                  const diff = filteredAvg - overallAvg;
+                  return diff > 0 ? (
+                    <TrendingUp className="w-4 h-4 text-success" />
+                  ) : diff < 0 ? (
+                    <TrendingDown className="w-4 h-4 text-destructive" />
+                  ) : null;
+                })()}
+              </div>
+              <div className="flex items-baseline gap-2">
+                <p className="text-2xl font-bold text-success">
+                  {(filteredSubjects.reduce((sum, s) => sum + s.passRate, 0) / filteredSubjects.length).toFixed(1)}%
+                </p>
+                {(() => {
+                  const filteredAvg = filteredSubjects.reduce((sum, s) => sum + s.passRate, 0) / filteredSubjects.length;
+                  const overallAvg = subjectBreakdown.reduce((sum, s) => sum + s.passRate, 0) / subjectBreakdown.length;
+                  const diff = filteredAvg - overallAvg;
+                  return diff !== 0 ? (
+                    <span className={`text-xs font-medium ${diff > 0 ? 'text-success' : 'text-destructive'}`}>
+                      {diff > 0 ? '+' : ''}{diff.toFixed(1)}%
+                    </span>
+                  ) : null;
+                })()}
+              </div>
             </div>
             <div className="p-4 rounded-lg bg-accent/10 border border-accent/20">
-              <p className="text-sm text-muted-foreground mb-1">Avg Excellence</p>
-              <p className="text-2xl font-bold text-accent">
-                {(filteredSubjects.reduce((sum, s) => sum + s.excellenceRate, 0) / filteredSubjects.length).toFixed(1)}%
-              </p>
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-sm text-muted-foreground">Avg Excellence</p>
+                {(() => {
+                  const filteredAvg = filteredSubjects.reduce((sum, s) => sum + s.excellenceRate, 0) / filteredSubjects.length;
+                  const overallAvg = subjectBreakdown.reduce((sum, s) => sum + s.excellenceRate, 0) / subjectBreakdown.length;
+                  const diff = filteredAvg - overallAvg;
+                  return diff > 0 ? (
+                    <TrendingUp className="w-4 h-4 text-success" />
+                  ) : diff < 0 ? (
+                    <TrendingDown className="w-4 h-4 text-destructive" />
+                  ) : null;
+                })()}
+              </div>
+              <div className="flex items-baseline gap-2">
+                <p className="text-2xl font-bold text-accent">
+                  {(filteredSubjects.reduce((sum, s) => sum + s.excellenceRate, 0) / filteredSubjects.length).toFixed(1)}%
+                </p>
+                {(() => {
+                  const filteredAvg = filteredSubjects.reduce((sum, s) => sum + s.excellenceRate, 0) / filteredSubjects.length;
+                  const overallAvg = subjectBreakdown.reduce((sum, s) => sum + s.excellenceRate, 0) / subjectBreakdown.length;
+                  const diff = filteredAvg - overallAvg;
+                  return diff !== 0 ? (
+                    <span className={`text-xs font-medium ${diff > 0 ? 'text-success' : 'text-destructive'}`}>
+                      {diff > 0 ? '+' : ''}{diff.toFixed(1)}%
+                    </span>
+                  ) : null;
+                })()}
+              </div>
             </div>
             <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20">
-              <p className="text-sm text-muted-foreground mb-1">Total Failing</p>
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-sm text-muted-foreground">Total Failing</p>
+                {(() => {
+                  const filteredTotal = filteredSubjects.reduce((sum, s) => sum + s.failing, 0);
+                  const overallTotal = subjectBreakdown.reduce((sum, s) => sum + s.failing, 0);
+                  const avgFiltered = filteredTotal / filteredSubjects.length;
+                  const avgOverall = overallTotal / subjectBreakdown.length;
+                  const diff = avgFiltered - avgOverall;
+                  return diff < 0 ? (
+                    <TrendingUp className="w-4 h-4 text-success" />
+                  ) : diff > 0 ? (
+                    <TrendingDown className="w-4 h-4 text-destructive" />
+                  ) : null;
+                })()}
+              </div>
               <p className="text-2xl font-bold text-destructive">
                 {filteredSubjects.reduce((sum, s) => sum + s.failing, 0)}
               </p>
