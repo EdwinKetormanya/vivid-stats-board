@@ -524,8 +524,39 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
               <h3 className="text-xl font-semibold text-foreground">Subject-wise Analysis</h3>
               <p className="text-sm text-muted-foreground">Detailed performance metrics by subject</p>
             </div>
+        </div>
+
+        {/* Filtered Summary Statistics */}
+        {filteredSubjects.length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
+              <p className="text-sm text-muted-foreground mb-1">Subjects Shown</p>
+              <p className="text-2xl font-bold text-primary">
+                {filteredSubjects.length}
+                <span className="text-sm text-muted-foreground ml-1">/ {subjectBreakdown.length}</span>
+              </p>
+            </div>
+            <div className="p-4 rounded-lg bg-success/10 border border-success/20">
+              <p className="text-sm text-muted-foreground mb-1">Avg Pass Rate</p>
+              <p className="text-2xl font-bold text-success">
+                {(filteredSubjects.reduce((sum, s) => sum + s.passRate, 0) / filteredSubjects.length).toFixed(1)}%
+              </p>
+            </div>
+            <div className="p-4 rounded-lg bg-accent/10 border border-accent/20">
+              <p className="text-sm text-muted-foreground mb-1">Avg Excellence</p>
+              <p className="text-2xl font-bold text-accent">
+                {(filteredSubjects.reduce((sum, s) => sum + s.excellenceRate, 0) / filteredSubjects.length).toFixed(1)}%
+              </p>
+            </div>
+            <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20">
+              <p className="text-sm text-muted-foreground mb-1">Total Failing</p>
+              <p className="text-2xl font-bold text-destructive">
+                {filteredSubjects.reduce((sum, s) => sum + s.failing, 0)}
+              </p>
+            </div>
           </div>
-          
+        )}
+
           <div className="flex items-center gap-3">
             <Filter className="w-4 h-4 text-muted-foreground" />
             <Select value={subjectFilter} onValueChange={setSubjectFilter}>
