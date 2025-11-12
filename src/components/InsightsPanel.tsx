@@ -246,13 +246,13 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
   // Subject name to database column mapping
   const subjectKeyMap: Record<string, string> = {
     'mathematics': 'mathematics',
-    'english language': 'english_language',
-    'natural science': 'natural_science',
+    'english': 'english_language',
+    'science': 'natural_science',
     'history': 'history',
     'rme': 'rme',
     'creative arts': 'creative_arts',
     'owop': 'owop',
-    'ghanaian language': 'ghanaian_language',
+    'ghanaian lang': 'ghanaian_language',
     'french': 'french',
     'computing': 'computing'
   };
