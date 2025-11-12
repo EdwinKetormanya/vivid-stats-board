@@ -529,13 +529,43 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
 
         {/* Filtered Summary Statistics */}
         {filteredSubjects.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
               <p className="text-sm text-muted-foreground mb-1">Subjects Shown</p>
               <p className="text-2xl font-bold text-primary">
                 {filteredSubjects.length}
                 <span className="text-sm text-muted-foreground ml-1">/ {subjectBreakdown.length}</span>
               </p>
+            </div>
+            <div className="p-4 rounded-lg bg-success/10 border border-success/20">
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-sm text-muted-foreground">Average Score</p>
+                {(() => {
+                  const filteredAvg = filteredSubjects.reduce((sum, s) => sum + s.average, 0) / filteredSubjects.length;
+                  const overallAvg = subjectBreakdown.reduce((sum, s) => sum + s.average, 0) / subjectBreakdown.length;
+                  const diff = filteredAvg - overallAvg;
+                  return diff > 0 ? (
+                    <TrendingUp className="w-4 h-4 text-success" />
+                  ) : diff < 0 ? (
+                    <TrendingDown className="w-4 h-4 text-destructive" />
+                  ) : null;
+                })()}
+              </div>
+              <div className="flex items-baseline gap-2">
+                <p className="text-2xl font-bold text-success">
+                  {(filteredSubjects.reduce((sum, s) => sum + s.average, 0) / filteredSubjects.length).toFixed(1)}%
+                </p>
+                {(() => {
+                  const filteredAvg = filteredSubjects.reduce((sum, s) => sum + s.average, 0) / filteredSubjects.length;
+                  const overallAvg = subjectBreakdown.reduce((sum, s) => sum + s.average, 0) / subjectBreakdown.length;
+                  const diff = filteredAvg - overallAvg;
+                  return diff !== 0 ? (
+                    <span className={`text-xs font-medium ${diff > 0 ? 'text-success' : 'text-destructive'}`}>
+                      {diff > 0 ? '+' : ''}{diff.toFixed(1)}%
+                    </span>
+                  ) : null;
+                })()}
+              </div>
             </div>
             <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20">
               <div className="flex items-center justify-between mb-1">
