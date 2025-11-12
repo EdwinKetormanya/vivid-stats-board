@@ -1,9 +1,12 @@
 import { Card } from "@/components/ui/card";
-import { AlertCircle, CheckCircle, TrendingUp, TrendingDown, Lightbulb, Users, BookOpen, Award, BarChart3, ScatterChart as ScatterIcon, Filter, Info } from "lucide-react";
+import { AlertCircle, CheckCircle, TrendingUp, TrendingDown, Lightbulb, Users, BookOpen, Award, BarChart3, ScatterChart as ScatterIcon, Filter, Info, Download, FileSpreadsheet } from "lucide-react";
 import { LearnerScore, SubjectPerformance, DashboardStats } from "@/types/learner";
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, Cell, PieChart, Pie } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import * as XLSX from 'xlsx';
 import { useState } from "react";
 
 interface InsightsPanelProps {
@@ -28,6 +31,66 @@ interface Recommendation {
 
 export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsPanelProps) => {
   const [subjectFilter, setSubjectFilter] = useState<string>("all");
+  
+  const exportToExcel = () => {
+    try {
+      const exportData = filteredSubjects.map(subject => ({
+        'Subject': subject.subject,
+        'Average': subject.average.toFixed(2),
+        'Highest': subject.highest.toFixed(2),
+        'Failing Students': subject.failing,
+        'Status': subject.average >= 40 ? 'Strong' : subject.average >= 30 ? 'Needs Support' : 'Critical'
+      }));
+
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      
+      const columnWidths = [
+        { wch: 20 },
+        { wch: 10 },
+        { wch: 10 },
+        { wch: 15 },
+        { wch: 15 }
+      ];
+      ws['!cols'] = columnWidths;
+      
+      XLSX.utils.book_append_sheet(wb, ws, 'Subject Performance');
+      XLSX.writeFile(wb, `subject-performance-${new Date().toISOString().split('T')[0]}.xlsx`);
+      toast.success("Excel file downloaded successfully!");
+    } catch (error) {
+      toast.error("Failed to download Excel file");
+      console.error("Error exporting Excel:", error);
+    }
+  };
+
+  const exportToCSV = () => {
+    try {
+      const headers = ['Subject', 'Average', 'Highest', 'Failing Students', 'Status'];
+      const rows = filteredSubjects.map(subject => [
+        subject.subject,
+        subject.average.toFixed(2),
+        subject.highest.toFixed(2),
+        subject.failing,
+        subject.average >= 40 ? 'Strong' : subject.average >= 30 ? 'Needs Support' : 'Critical'
+      ]);
+
+      const csvContent = [
+        headers.join(','),
+        ...rows.map(row => row.join(','))
+      ].join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `subject-performance-${new Date().toISOString().split('T')[0]}.csv`;
+      link.click();
+      toast.success("CSV file downloaded successfully!");
+    } catch (error) {
+      toast.error("Failed to download CSV file");
+      console.error("Error exporting CSV:", error);
+    }
+  };
+
   const generateInsights = (): Insight[] => {
     const insights: Insight[] = [];
     
@@ -623,21 +686,34 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
           </TooltipProvider>
         )}
 
-          <div className="flex items-center gap-3">
-            <Filter className="w-4 h-4 text-muted-foreground" />
-            <Select value={subjectFilter} onValueChange={setSubjectFilter}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Filter subjects" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Subjects ({subjectBreakdown.length})</SelectItem>
-                <SelectItem value="critical">Critical (&lt;30% passing)</SelectItem>
-                <SelectItem value="low-pass">Low Pass (&lt;50% passing)</SelectItem>
-                <SelectItem value="high-fail">High Failing Count (&gt;5)</SelectItem>
-                <SelectItem value="weak">Weak Performance (&lt;30% avg)</SelectItem>
-                <SelectItem value="excellent">Excellent (&ge;40% avg)</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <Filter className="w-4 h-4 text-muted-foreground" />
+              <Select value={subjectFilter} onValueChange={setSubjectFilter}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Filter subjects" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Subjects ({subjectBreakdown.length})</SelectItem>
+                  <SelectItem value="critical">Critical (&lt;30% passing)</SelectItem>
+                  <SelectItem value="low-pass">Low Pass (&lt;50% passing)</SelectItem>
+                  <SelectItem value="high-fail">High Failing Count (&gt;5)</SelectItem>
+                  <SelectItem value="weak">Weak Performance (&lt;30% avg)</SelectItem>
+                  <SelectItem value="excellent">Excellent (&ge;40% avg)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="flex items-center gap-2 ml-auto">
+              <Button variant="outline" size="sm" onClick={exportToExcel}>
+                <FileSpreadsheet className="w-4 h-4 mr-2" />
+                Export Excel
+              </Button>
+              <Button variant="outline" size="sm" onClick={exportToCSV}>
+                <Download className="w-4 h-4 mr-2" />
+                Export CSV
+              </Button>
+            </div>
           </div>
         </div>
 

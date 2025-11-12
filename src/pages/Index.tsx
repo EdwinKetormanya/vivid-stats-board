@@ -11,7 +11,7 @@ import { InsightsPanel } from "@/components/InsightsPanel";
 import { PrintReports } from "@/components/PrintReports";
 import { TeacherRemarksSelector } from "@/components/TeacherRemarksSelector";
 import { Footer } from "@/components/Footer";
-import { Users, TrendingUp, Trophy, BarChart3, Printer, Download, LogOut, GraduationCap, Plus, Shield } from "lucide-react";
+import { Users, TrendingUp, Trophy, BarChart3, Printer, Download, LogOut, GraduationCap, Plus, Shield, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -477,6 +477,32 @@ const handleSchoolLogoChange = async (logoBase64: string) => {
     }
   };
 
+  const handleClearStudents = async () => {
+    if (!selectedClassId) {
+      toast.error("Please select a class first");
+      return;
+    }
+
+    if (!confirm("Are you sure you want to delete ALL students in this class? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("students")
+        .delete()
+        .eq("class_id", selectedClassId);
+
+      if (error) throw error;
+
+      toast.success("All students deleted successfully!");
+      setStudents([]);
+    } catch (error) {
+      console.error("Error deleting students:", error);
+      toast.error("Failed to delete students");
+    }
+  };
+
 
   if (profileLoading) {
     return (
@@ -641,6 +667,14 @@ const handleSchoolLogoChange = async (logoBase64: string) => {
             {/* Upload Section */}
             <div className="flex justify-center mb-6 gap-4 flex-wrap">
               <FileUpload onFileSelect={handleFileSelect} />
+              <Button
+                onClick={handleClearStudents}
+                variant="destructive"
+                size="sm"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Clear All Students
+              </Button>
               {students.length > 0 && (
                 <>
                   <Button
