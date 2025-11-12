@@ -1,8 +1,9 @@
 import { Card } from "@/components/ui/card";
-import { AlertCircle, CheckCircle, TrendingUp, TrendingDown, Lightbulb, Users, BookOpen, Award, BarChart3, ScatterChart as ScatterIcon, Filter } from "lucide-react";
+import { AlertCircle, CheckCircle, TrendingUp, TrendingDown, Lightbulb, Users, BookOpen, Award, BarChart3, ScatterChart as ScatterIcon, Filter, Info } from "lucide-react";
 import { LearnerScore, SubjectPerformance, DashboardStats } from "@/types/learner";
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, Cell, PieChart, Pie } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useState } from "react";
 
 interface InsightsPanelProps {
@@ -529,65 +530,97 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
 
         {/* Filtered Summary Statistics */}
         {filteredSubjects.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
-              <p className="text-sm text-muted-foreground mb-1">Subjects Shown</p>
-              <p className="text-2xl font-bold text-primary">
-                {filteredSubjects.length}
-                <span className="text-sm text-muted-foreground ml-1">/ {subjectBreakdown.length}</span>
-              </p>
-            </div>
-            <div className="p-4 rounded-lg bg-success/10 border border-success/20">
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-sm text-muted-foreground">Average Score</p>
-                {(() => {
-                  const filteredAvg = filteredSubjects.reduce((sum, s) => sum + s.average, 0) / filteredSubjects.length;
-                  const overallAvg = subjectBreakdown.reduce((sum, s) => sum + s.average, 0) / subjectBreakdown.length;
-                  const diff = filteredAvg - overallAvg;
-                  return diff > 0 ? (
-                    <TrendingUp className="w-4 h-4 text-success" />
-                  ) : diff < 0 ? (
-                    <TrendingDown className="w-4 h-4 text-destructive" />
-                  ) : null;
-                })()}
-              </div>
-              <div className="flex items-baseline gap-2">
-                <p className="text-2xl font-bold text-success">
-                  {(filteredSubjects.reduce((sum, s) => sum + s.average, 0) / filteredSubjects.length).toFixed(1)}%
+          <TooltipProvider>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
+                <UITooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 mb-1 cursor-help">
+                      <p className="text-sm text-muted-foreground">Subjects Shown</p>
+                      <Info className="w-3 h-3 text-muted-foreground" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="max-w-xs">Number of subjects displayed based on your selected filter</p>
+                  </TooltipContent>
+                </UITooltip>
+                <p className="text-2xl font-bold text-primary">
+                  {filteredSubjects.length}
+                  <span className="text-sm text-muted-foreground ml-1">/ {subjectBreakdown.length}</span>
                 </p>
-                {(() => {
-                  const filteredAvg = filteredSubjects.reduce((sum, s) => sum + s.average, 0) / filteredSubjects.length;
-                  const overallAvg = subjectBreakdown.reduce((sum, s) => sum + s.average, 0) / subjectBreakdown.length;
-                  const diff = filteredAvg - overallAvg;
-                  return diff !== 0 ? (
-                    <span className={`text-xs font-medium ${diff > 0 ? 'text-success' : 'text-destructive'}`}>
-                      {diff > 0 ? '+' : ''}{diff.toFixed(1)}%
-                    </span>
-                  ) : null;
-                })()}
+              </div>
+              <div className="p-4 rounded-lg bg-success/10 border border-success/20">
+                <div className="flex items-center justify-between mb-1">
+                  <UITooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center gap-1 cursor-help">
+                        <p className="text-sm text-muted-foreground">Average Score</p>
+                        <Info className="w-3 h-3 text-muted-foreground" />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="max-w-xs">Average class performance across all filtered subjects. Arrows show comparison to overall average.</p>
+                    </TooltipContent>
+                  </UITooltip>
+                  {(() => {
+                    const filteredAvg = filteredSubjects.reduce((sum, s) => sum + s.average, 0) / filteredSubjects.length;
+                    const overallAvg = subjectBreakdown.reduce((sum, s) => sum + s.average, 0) / subjectBreakdown.length;
+                    const diff = filteredAvg - overallAvg;
+                    return diff > 0 ? (
+                      <TrendingUp className="w-4 h-4 text-success" />
+                    ) : diff < 0 ? (
+                      <TrendingDown className="w-4 h-4 text-destructive" />
+                    ) : null;
+                  })()}
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <p className="text-2xl font-bold text-success">
+                    {(filteredSubjects.reduce((sum, s) => sum + s.average, 0) / filteredSubjects.length).toFixed(1)}%
+                  </p>
+                  {(() => {
+                    const filteredAvg = filteredSubjects.reduce((sum, s) => sum + s.average, 0) / filteredSubjects.length;
+                    const overallAvg = subjectBreakdown.reduce((sum, s) => sum + s.average, 0) / subjectBreakdown.length;
+                    const diff = filteredAvg - overallAvg;
+                    return diff !== 0 ? (
+                      <span className={`text-xs font-medium ${diff > 0 ? 'text-success' : 'text-destructive'}`}>
+                        {diff > 0 ? '+' : ''}{diff.toFixed(1)}%
+                      </span>
+                    ) : null;
+                  })()}
+                </div>
+              </div>
+              <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20">
+                <div className="flex items-center justify-between mb-1">
+                  <UITooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center gap-1 cursor-help">
+                        <p className="text-sm text-muted-foreground">Total Failing</p>
+                        <Info className="w-3 h-3 text-muted-foreground" />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="max-w-xs">Total number of students scoring below 30% across all filtered subjects</p>
+                    </TooltipContent>
+                  </UITooltip>
+                  {(() => {
+                    const filteredTotal = filteredSubjects.reduce((sum, s) => sum + s.failing, 0);
+                    const overallTotal = subjectBreakdown.reduce((sum, s) => sum + s.failing, 0);
+                    const avgFiltered = filteredTotal / filteredSubjects.length;
+                    const avgOverall = overallTotal / subjectBreakdown.length;
+                    const diff = avgFiltered - avgOverall;
+                    return diff < 0 ? (
+                      <TrendingUp className="w-4 h-4 text-success" />
+                    ) : diff > 0 ? (
+                      <TrendingDown className="w-4 h-4 text-destructive" />
+                    ) : null;
+                  })()}
+                </div>
+                <p className="text-2xl font-bold text-destructive">
+                  {filteredSubjects.reduce((sum, s) => sum + s.failing, 0)}
+                </p>
               </div>
             </div>
-            <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20">
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-sm text-muted-foreground">Total Failing</p>
-                {(() => {
-                  const filteredTotal = filteredSubjects.reduce((sum, s) => sum + s.failing, 0);
-                  const overallTotal = subjectBreakdown.reduce((sum, s) => sum + s.failing, 0);
-                  const avgFiltered = filteredTotal / filteredSubjects.length;
-                  const avgOverall = overallTotal / subjectBreakdown.length;
-                  const diff = avgFiltered - avgOverall;
-                  return diff < 0 ? (
-                    <TrendingUp className="w-4 h-4 text-success" />
-                  ) : diff > 0 ? (
-                    <TrendingDown className="w-4 h-4 text-destructive" />
-                  ) : null;
-                })()}
-              </div>
-              <p className="text-2xl font-bold text-destructive">
-                {filteredSubjects.reduce((sum, s) => sum + s.failing, 0)}
-              </p>
-            </div>
-          </div>
+          </TooltipProvider>
         )}
 
           <div className="flex items-center gap-3">
