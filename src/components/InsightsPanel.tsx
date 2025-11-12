@@ -268,13 +268,18 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
     const excellent = subjectScores.filter(s => s >= 50).length;
     const failing = subjectScores.filter(s => s < 30).length;
 
+    const passRate = subjectScores.length > 0 ? (passing / subjectScores.length) * 100 : 0;
+    const excellenceRate = subjectScores.length > 0 ? (excellent / subjectScores.length) * 100 : 0;
+
+    console.log(`Subject: ${subject.subject}, DB Key: ${dbColumnKey}, Total Scores: ${subjectScores.length}, Passing: ${passing}, Pass Rate: ${passRate}`);
+
     return {
       ...subject,
       passing,
       excellent,
       failing,
-      passRate: subjectScores.length > 0 ? ((passing / subjectScores.length) * 100).toFixed(1) : '0.0',
-      excellenceRate: subjectScores.length > 0 ? ((excellent / subjectScores.length) * 100).toFixed(1) : '0.0'
+      passRate: passRate,
+      excellenceRate: excellenceRate
     };
   });
 
@@ -537,17 +542,17 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
                         <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
                           <div 
                             className="h-full bg-primary transition-all"
-                            style={{ width: `${subject.passRate}%` }}
+                            style={{ width: `${Math.min(subject.passRate, 100)}%` }}
                           />
                         </div>
                         <span className="text-sm font-medium text-muted-foreground">
-                          {subject.passRate}%
+                          {subject.passRate.toFixed(1)}%
                         </span>
                       </div>
                     </td>
                     <td className="text-center py-4 px-4">
                       <span className="text-sm font-medium text-success">
-                        {subject.excellenceRate}%
+                        {subject.excellenceRate.toFixed(1)}%
                       </span>
                     </td>
                     <td className="text-center py-4 px-4">
