@@ -240,13 +240,28 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
     else gradeRanges[5].count++;
   });
 
+  // Subject name to database column mapping
+  const subjectKeyMap: Record<string, string> = {
+    'mathematics': 'mathematics',
+    'english language': 'english_language',
+    'natural science': 'natural_science',
+    'history': 'history',
+    'rme': 'rme',
+    'creative arts': 'creative_arts',
+    'owop': 'owop',
+    'ghanaian language': 'ghanaian_language',
+    'french': 'french',
+    'computing': 'computing'
+  };
+
   // Subject-wise detailed breakdown
   const subjectBreakdown = subjectPerformance.map(subject => {
+    const dbColumnKey = subjectKeyMap[subject.subject.toLowerCase()];
+    
     const subjectScores = learners.map(l => {
-      const subjectKey = Object.keys(l).find(key => 
-        key.toLowerCase().replace(/_/g, ' ') === subject.subject.toLowerCase()
-      );
-      return subjectKey ? Number(l[subjectKey as keyof LearnerScore]) : 0;
+      return dbColumnKey && l[dbColumnKey as keyof LearnerScore] 
+        ? Number(l[dbColumnKey as keyof LearnerScore]) 
+        : 0;
     }).filter(score => score > 0);
 
     const passing = subjectScores.filter(s => s >= 30).length;
@@ -258,8 +273,8 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
       passing,
       excellent,
       failing,
-      passRate: ((passing / subjectScores.length) * 100).toFixed(1),
-      excellenceRate: ((excellent / subjectScores.length) * 100).toFixed(1)
+      passRate: subjectScores.length > 0 ? ((passing / subjectScores.length) * 100).toFixed(1) : '0.0',
+      excellenceRate: subjectScores.length > 0 ? ((excellent / subjectScores.length) * 100).toFixed(1) : '0.0'
     };
   });
 
