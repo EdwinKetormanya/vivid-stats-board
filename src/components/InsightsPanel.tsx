@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
-import { AlertCircle, CheckCircle, TrendingUp, TrendingDown, Lightbulb, Users, BookOpen, Award } from "lucide-react";
+import { AlertCircle, CheckCircle, TrendingUp, TrendingDown, Lightbulb, Users, BookOpen, Award, BarChart3, ScatterChart as ScatterIcon } from "lucide-react";
 import { LearnerScore, SubjectPerformance, DashboardStats } from "@/types/learner";
+import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, Cell, PieChart, Pie } from "recharts";
 
 interface InsightsPanelProps {
   learners: LearnerScore[];
@@ -207,6 +208,61 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
   const insights = generateInsights();
   const recommendations = generateRecommendations();
 
+  // Performance distribution data for scatter plot
+  const performanceDistribution = learners.map((learner, idx) => ({
+    name: learner.name,
+    score: learner.averageScore,
+    studentIndex: idx + 1,
+    category: learner.averageScore >= stats.averageScore + 5 
+      ? "Above Average" 
+      : learner.averageScore <= stats.averageScore - 5 
+      ? "Below Average" 
+      : "Average"
+  }));
+
+  // Grade distribution
+  const gradeRanges = [
+    { range: "0-20%", count: 0, color: "hsl(var(--destructive))" },
+    { range: "21-30%", count: 0, color: "hsl(var(--warning))" },
+    { range: "31-40%", count: 0, color: "hsl(var(--chart-3))" },
+    { range: "41-50%", count: 0, color: "hsl(var(--chart-4))" },
+    { range: "51-60%", count: 0, color: "hsl(var(--success))" },
+    { range: "61-100%", count: 0, color: "hsl(var(--primary))" }
+  ];
+
+  learners.forEach(learner => {
+    const score = learner.averageScore;
+    if (score <= 20) gradeRanges[0].count++;
+    else if (score <= 30) gradeRanges[1].count++;
+    else if (score <= 40) gradeRanges[2].count++;
+    else if (score <= 50) gradeRanges[3].count++;
+    else if (score <= 60) gradeRanges[4].count++;
+    else gradeRanges[5].count++;
+  });
+
+  // Subject-wise detailed breakdown
+  const subjectBreakdown = subjectPerformance.map(subject => {
+    const subjectScores = learners.map(l => {
+      const subjectKey = Object.keys(l).find(key => 
+        key.toLowerCase().replace(/_/g, ' ') === subject.subject.toLowerCase()
+      );
+      return subjectKey ? Number(l[subjectKey as keyof LearnerScore]) : 0;
+    }).filter(score => score > 0);
+
+    const passing = subjectScores.filter(s => s >= 30).length;
+    const excellent = subjectScores.filter(s => s >= 50).length;
+    const failing = subjectScores.filter(s => s < 30).length;
+
+    return {
+      ...subject,
+      passing,
+      excellent,
+      failing,
+      passRate: ((passing / subjectScores.length) * 100).toFixed(1),
+      excellenceRate: ((excellent / subjectScores.length) * 100).toFixed(1)
+    };
+  });
+
   const getInsightStyles = (type: string) => {
     switch (type) {
       case "success":
@@ -246,6 +302,273 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
 
   return (
     <div className="space-y-6">
+      {/* Performance Distribution Scatter Plot */}
+      <Card className="p-6 hover:shadow-lg transition-all duration-300">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-3 rounded-xl bg-gradient-to-br from-primary to-purple-500">
+            <ScatterIcon className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h3 className="text-xl font-semibold text-foreground">Performance Distribution</h3>
+            <p className="text-sm text-muted-foreground">Visual analysis of student performance relative to class average</p>
+          </div>
+        </div>
+
+        <ResponsiveContainer width="100%" height={400}>
+          <ScatterChart margin={{ top: 20, right: 30, bottom: 60, left: 20 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <XAxis 
+              dataKey="studentIndex" 
+              name="Student #" 
+              label={{ value: 'Student Number', position: 'insideBottom', offset: -10 }}
+              stroke="hsl(var(--muted-foreground))"
+            />
+            <YAxis 
+              dataKey="score" 
+              name="Score" 
+              label={{ value: 'Score (%)', angle: -90, position: 'insideLeft' }}
+              stroke="hsl(var(--muted-foreground))"
+              domain={[0, 100]}
+            />
+            <Tooltip 
+              content={({ active, payload }) => {
+                if (active && payload && payload[0]) {
+                  const data = payload[0].payload;
+                  return (
+                    <div className="bg-background border border-border p-3 rounded-lg shadow-lg">
+                      <p className="font-semibold text-foreground">{data.name}</p>
+                      <p className="text-sm text-muted-foreground">Score: {data.score.toFixed(1)}%</p>
+                      <p className="text-sm font-medium" style={{ color: payload[0].fill }}>
+                        {data.category}
+                      </p>
+                    </div>
+                  );
+                }
+                return null;
+              }}
+            />
+            <Legend 
+              wrapperStyle={{ paddingTop: '20px' }}
+              content={(props) => {
+                const { payload } = props;
+                return (
+                  <div className="flex justify-center gap-6 flex-wrap">
+                    {payload?.map((entry, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: entry.color }}
+                        />
+                        <span className="text-sm text-muted-foreground">{entry.value}</span>
+                      </div>
+                    ))}
+                    <div className="flex items-center gap-2">
+                      <div className="w-12 h-0.5 bg-primary" />
+                      <span className="text-sm text-muted-foreground">Class Average</span>
+                    </div>
+                  </div>
+                );
+              }}
+            />
+            <Scatter 
+              name="Above Average" 
+              data={performanceDistribution.filter(d => d.category === "Above Average")} 
+              fill="hsl(var(--success))"
+              shape="circle"
+            />
+            <Scatter 
+              name="Average" 
+              data={performanceDistribution.filter(d => d.category === "Average")} 
+              fill="hsl(var(--chart-4))"
+              shape="circle"
+            />
+            <Scatter 
+              name="Below Average" 
+              data={performanceDistribution.filter(d => d.category === "Below Average")} 
+              fill="hsl(var(--destructive))"
+              shape="circle"
+            />
+            {/* Average line */}
+            <Scatter 
+              data={[
+                { studentIndex: 0, score: stats.averageScore },
+                { studentIndex: learners.length + 1, score: stats.averageScore }
+              ]}
+              line={{ stroke: 'hsl(var(--primary))', strokeWidth: 2, strokeDasharray: '5 5' }}
+              shape={() => null}
+            />
+          </ScatterChart>
+        </ResponsiveContainer>
+
+        <div className="grid grid-cols-3 gap-4 mt-6">
+          <div className="p-4 rounded-lg bg-success/10 border border-success/20">
+            <p className="text-sm text-muted-foreground mb-1">Above Average</p>
+            <p className="text-2xl font-bold text-success">
+              {performanceDistribution.filter(d => d.category === "Above Average").length}
+            </p>
+          </div>
+          <div className="p-4 rounded-lg bg-chart-4/10 border border-chart-4/20">
+            <p className="text-sm text-muted-foreground mb-1">Average</p>
+            <p className="text-2xl font-bold" style={{ color: "hsl(var(--chart-4))" }}>
+              {performanceDistribution.filter(d => d.category === "Average").length}
+            </p>
+          </div>
+          <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20">
+            <p className="text-sm text-muted-foreground mb-1">Below Average</p>
+            <p className="text-2xl font-bold text-destructive">
+              {performanceDistribution.filter(d => d.category === "Below Average").length}
+            </p>
+          </div>
+        </div>
+      </Card>
+
+      {/* Grade Distribution */}
+      <Card className="p-6 hover:shadow-lg transition-all duration-300">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-3 rounded-xl bg-gradient-to-br from-accent to-orange-500">
+            <BarChart3 className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h3 className="text-xl font-semibold text-foreground">Grade Distribution</h3>
+            <p className="text-sm text-muted-foreground">Student count across performance bands</p>
+          </div>
+        </div>
+
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={gradeRanges} margin={{ top: 20, right: 30, bottom: 20, left: 20 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <XAxis 
+              dataKey="range" 
+              stroke="hsl(var(--muted-foreground))"
+              label={{ value: 'Score Range', position: 'insideBottom', offset: -10 }}
+            />
+            <YAxis 
+              stroke="hsl(var(--muted-foreground))"
+              label={{ value: 'Number of Students', angle: -90, position: 'insideLeft' }}
+            />
+            <Tooltip 
+              content={({ active, payload }) => {
+                if (active && payload && payload[0]) {
+                  const data = payload[0].payload;
+                  const percentage = ((data.count / learners.length) * 100).toFixed(1);
+                  return (
+                    <div className="bg-background border border-border p-3 rounded-lg shadow-lg">
+                      <p className="font-semibold text-foreground">{data.range}</p>
+                      <p className="text-sm text-muted-foreground">Students: {data.count}</p>
+                      <p className="text-sm text-muted-foreground">Percentage: {percentage}%</p>
+                    </div>
+                  );
+                }
+                return null;
+              }}
+            />
+            <Bar dataKey="count" radius={[8, 8, 0, 0]}>
+              {gradeRanges.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </Card>
+
+      {/* Subject-wise Detailed Breakdown */}
+      <Card className="p-6 hover:shadow-lg transition-all duration-300">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500">
+            <BookOpen className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h3 className="text-xl font-semibold text-foreground">Subject-wise Analysis</h3>
+            <p className="text-sm text-muted-foreground">Detailed performance metrics by subject</p>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="text-left py-3 px-4 font-semibold text-foreground">Subject</th>
+                <th className="text-center py-3 px-4 font-semibold text-foreground">Average</th>
+                <th className="text-center py-3 px-4 font-semibold text-foreground">Highest</th>
+                <th className="text-center py-3 px-4 font-semibold text-foreground">Pass Rate</th>
+                <th className="text-center py-3 px-4 font-semibold text-foreground">Excellence Rate</th>
+                <th className="text-center py-3 px-4 font-semibold text-foreground">Failing</th>
+                <th className="text-left py-3 px-4 font-semibold text-foreground">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {subjectBreakdown
+                .sort((a, b) => b.average - a.average)
+                .map((subject, idx) => (
+                  <tr 
+                    key={idx}
+                    className="border-b border-border hover:bg-accent/5 transition-colors"
+                  >
+                    <td className="py-4 px-4 font-medium text-foreground">{subject.subject}</td>
+                    <td className="text-center py-4 px-4">
+                      <span className={`font-semibold ${
+                        subject.average >= 40 ? 'text-success' : 
+                        subject.average >= 30 ? 'text-warning' : 
+                        'text-destructive'
+                      }`}>
+                        {subject.average.toFixed(1)}%
+                      </span>
+                    </td>
+                    <td className="text-center py-4 px-4 text-muted-foreground">
+                      {subject.highest.toFixed(1)}%
+                    </td>
+                    <td className="text-center py-4 px-4">
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-primary transition-all"
+                            style={{ width: `${subject.passRate}%` }}
+                          />
+                        </div>
+                        <span className="text-sm font-medium text-muted-foreground">
+                          {subject.passRate}%
+                        </span>
+                      </div>
+                    </td>
+                    <td className="text-center py-4 px-4">
+                      <span className="text-sm font-medium text-success">
+                        {subject.excellenceRate}%
+                      </span>
+                    </td>
+                    <td className="text-center py-4 px-4">
+                      <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                        subject.failing === 0 ? 'bg-success/10 text-success' :
+                        subject.failing <= 3 ? 'bg-warning/10 text-warning' :
+                        'bg-destructive/10 text-destructive'
+                      }`}>
+                        {subject.failing}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4">
+                      {subject.average >= 40 ? (
+                        <div className="flex items-center gap-1 text-success">
+                          <TrendingUp className="w-4 h-4" />
+                          <span className="text-xs font-medium">Strong</span>
+                        </div>
+                      ) : subject.average >= 30 ? (
+                        <div className="flex items-center gap-1 text-warning">
+                          <AlertCircle className="w-4 h-4" />
+                          <span className="text-xs font-medium">Moderate</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1 text-destructive">
+                          <TrendingDown className="w-4 h-4" />
+                          <span className="text-xs font-medium">Needs Help</span>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
       {/* Key Insights */}
       <Card className="p-6 hover:shadow-lg transition-all duration-300">
         <div className="flex items-center gap-3 mb-6">
