@@ -262,10 +262,11 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
     const dbColumnKey = subjectKeyMap[subject.subject.toLowerCase()];
     
     const subjectScores = learners.map(l => {
-      return dbColumnKey && l[dbColumnKey as keyof LearnerScore] 
+      const score = dbColumnKey && l[dbColumnKey as keyof LearnerScore] !== null && l[dbColumnKey as keyof LearnerScore] !== undefined
         ? Number(l[dbColumnKey as keyof LearnerScore]) 
-        : 0;
-    }).filter(score => score > 0);
+        : null;
+      return score;
+    }).filter((score): score is number => score !== null);
 
     const passing = subjectScores.filter(s => s >= 30).length;
     const excellent = subjectScores.filter(s => s >= 50).length;
