@@ -1,7 +1,9 @@
 import { Card } from "@/components/ui/card";
-import { AlertCircle, CheckCircle, TrendingUp, TrendingDown, Lightbulb, Users, BookOpen, Award, BarChart3, ScatterChart as ScatterIcon } from "lucide-react";
+import { AlertCircle, CheckCircle, TrendingUp, TrendingDown, Lightbulb, Users, BookOpen, Award, BarChart3, ScatterChart as ScatterIcon, Filter } from "lucide-react";
 import { LearnerScore, SubjectPerformance, DashboardStats } from "@/types/learner";
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, Cell, PieChart, Pie } from "recharts";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState } from "react";
 
 interface InsightsPanelProps {
   learners: LearnerScore[];
@@ -24,6 +26,7 @@ interface Recommendation {
 }
 
 export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsPanelProps) => {
+  const [subjectFilter, setSubjectFilter] = useState<string>("all");
   const generateInsights = (): Insight[] => {
     const insights: Insight[] = [];
     
@@ -283,6 +286,25 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
     };
   });
 
+  // Filter subjects based on selected criteria
+  const filteredSubjects = subjectBreakdown.filter(subject => {
+    switch (subjectFilter) {
+      case "low-pass":
+        return subject.passRate < 50;
+      case "critical":
+        return subject.passRate < 30;
+      case "high-fail":
+        return subject.failing > 5;
+      case "excellent":
+        return subject.average >= 40;
+      case "weak":
+        return subject.average < 30;
+      case "all":
+      default:
+        return true;
+    }
+  });
+
   const getInsightStyles = (type: string) => {
     switch (type) {
       case "success":
@@ -493,13 +515,32 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
 
       {/* Subject-wise Detailed Breakdown */}
       <Card className="p-6 hover:shadow-lg transition-all duration-300">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500">
-            <BookOpen className="w-6 h-6 text-white" />
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500">
+              <BookOpen className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold text-foreground">Subject-wise Analysis</h3>
+              <p className="text-sm text-muted-foreground">Detailed performance metrics by subject</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-xl font-semibold text-foreground">Subject-wise Analysis</h3>
-            <p className="text-sm text-muted-foreground">Detailed performance metrics by subject</p>
+          
+          <div className="flex items-center gap-3">
+            <Filter className="w-4 h-4 text-muted-foreground" />
+            <Select value={subjectFilter} onValueChange={setSubjectFilter}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Filter subjects" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Subjects ({subjectBreakdown.length})</SelectItem>
+                <SelectItem value="critical">Critical (&lt;30% pass rate)</SelectItem>
+                <SelectItem value="low-pass">Low Pass Rate (&lt;50%)</SelectItem>
+                <SelectItem value="high-fail">High Failing Count (&gt;5)</SelectItem>
+                <SelectItem value="weak">Weak Performance (&lt;30% avg)</SelectItem>
+                <SelectItem value="excellent">Excellent (&ge;40% avg)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
@@ -517,7 +558,14 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
               </tr>
             </thead>
             <tbody>
-              {subjectBreakdown
+              {filteredSubjects.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-8 text-center text-muted-foreground">
+                    No subjects match the selected filter criteria
+                  </td>
+                </tr>
+              ) : (
+                filteredSubjects
                 .sort((a, b) => b.average - a.average)
                 .map((subject, idx) => (
                   <tr 
@@ -583,7 +631,8 @@ export const InsightsPanel = ({ learners, subjectPerformance, stats }: InsightsP
                       )}
                     </td>
                   </tr>
-                ))}
+                ))
+              )}
             </tbody>
           </table>
         </div>
