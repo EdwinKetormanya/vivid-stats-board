@@ -23,9 +23,9 @@ export const IndividualReport = ({ learner, classAverage }: IndividualReportProp
   ];
 
   return (
-    <div className="print-page bg-white text-black p-6 min-h-[297mm] max-w-[210mm] mx-auto flex flex-col">
+    <div className="print-page bg-white text-black min-h-[297mm] max-w-[210mm] mx-auto flex flex-col">
       {/* Inner border within printable area */}
-      <div className="border-2 border-gray-800 p-3 flex flex-col flex-1">
+      <div className="border-2 border-gray-800 p-2 flex flex-col flex-1">
       {/* Header with Logo */}
       <div className="relative mb-2 border-b-2 border-gray-800 pb-2">
         <div className="flex items-start gap-3">
