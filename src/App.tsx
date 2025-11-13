@@ -15,9 +15,9 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
-      <AuthProvider>
-        <TooltipProvider>
+    <TooltipProvider>
+      <BrowserRouter>
+        <AuthProvider>
           <Toaster />
           <Sonner />
           <Routes>
@@ -48,9 +48,9 @@ const App = () => (
             />
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </TooltipProvider>
-      </AuthProvider>
-    </BrowserRouter>
+        </AuthProvider>
+      </BrowserRouter>
+    </TooltipProvider>
   </QueryClientProvider>
 );
 
