@@ -22,12 +22,14 @@
     page-break-after: always;
     page-break-inside: avoid;
     width: 210mm !important;
-    min-height: 297mm !important;
+    height: 297mm !important;
     max-width: 210mm !important;
-    padding: 10mm !important;
+    padding: 8mm !important;
     margin: 0 auto !important;
     background: white !important;
     box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
   }
   
   .page-break:last-child .print-page {
